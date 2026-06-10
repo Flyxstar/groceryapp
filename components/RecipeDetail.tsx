@@ -11,7 +11,11 @@ import { Recipe, Store } from "@/lib/types";
 
 const PREFS: { id: BrandPreference; label: string; hint: string }[] = [
   { id: "cheapest", label: "💰 Billigast oavsett", hint: "Tar lägsta priset, märke eller ej" },
-  { id: "budget", label: "🏷️ Lågprismärken", hint: "ICA Basic, Eldorado, Garant, Xtra, Favorit…" },
+  {
+    id: "budget",
+    label: "🏷️ Butikernas egna märken",
+    hint: "ICA Basic, Eldorado (Willys/Hemköp), Xtra (Coop), Favorit (City Gross), Lidls egna…",
+  },
   { id: "brand", label: "⭐ Märkesvaror", hint: "Arla, Scan, Barilla, Kronfågel…" },
 ];
 

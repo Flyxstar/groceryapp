@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import GpsButton from "@/components/GpsButton";
 import { useAppState } from "@/lib/app-state";
 import { CHAINS } from "@/lib/data/stores";
 import {
@@ -86,6 +87,7 @@ export default function TripPage() {
             <span className="ml-1 text-xs text-stone-400">Restider via: {provider}</span>
           )}
         </p>
+        <GpsButton className="mt-2" />
       </div>
 
       <div className="flex flex-wrap items-center gap-2">

@@ -20,8 +20,8 @@ handlingsrundan åt dig.
   hem-till-hem-tid: restid + tid inne i butikerna (inklusive kö när det är fullt).
 - **🚦 Trafikläge** – lätt/måttlig/tung trafik per timme vägs in (mycket för bil, lite för
   buss, inte alls för cykel/gång) när appen föreslår **den ultimata tiden att handla**.
-- **🍳 Recept** – bläddra bland recept, välj om du vill ha **lågprismärken**
-  (ICA Basic, Eldorado, Garant, Xtra, Favorit) eller märkesvaror, och se vad receptet kostar
+- **🍳 Recept** – bläddra bland recept, välj om du vill ha **butikernas egna märken**
+  (ICA Basic, Eldorado hos Willys/Hemköp, Xtra hos Coop, Favorit hos City Gross, Lidls egna) eller märkesvaror, och se vad receptet kostar
   i varje butik – plus den **bästa mixen** (billigaste butiken per ingrediens) och hur mycket
   du sparar. Lägg hela receptet i listan med ett klick och få restid inklusive trafik och
   butiks­trängsel.

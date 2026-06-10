@@ -1,11 +1,18 @@
 import { Chain, ChainInfo, Store } from "@/lib/types";
 
+/**
+ * Budget own-brands per chain:
+ * - Eldorado är Axfoods lågprismärke (Willys & Hemköp), Garant deras
+ *   ordinarie egna märke (axfood.se/om-axfood/egna-varor/vara-varumarken).
+ * - Favorit är City Gross (Bergendahls) eget märke.
+ * - Lidl säljer i princip bara egna märken, därför är "märket" här Lidl.
+ */
 export const CHAINS: Record<Chain, ChainInfo> = {
-  lidl: { id: "lidl", name: "Lidl", color: "#0050aa", budgetBrand: "Favorit" },
+  lidl: { id: "lidl", name: "Lidl", color: "#0050aa", budgetBrand: "Lidl" },
   ica: { id: "ica", name: "ICA", color: "#e3000b", budgetBrand: "ICA Basic" },
-  citygross: { id: "citygross", name: "City Gross", color: "#003da5", budgetBrand: "Garant" },
+  citygross: { id: "citygross", name: "City Gross", color: "#003da5", budgetBrand: "Favorit" },
   willys: { id: "willys", name: "Willys", color: "#e30613", budgetBrand: "Eldorado" },
-  hemkop: { id: "hemkop", name: "Hemköp", color: "#d10a11", budgetBrand: "Garant" },
+  hemkop: { id: "hemkop", name: "Hemköp", color: "#d10a11", budgetBrand: "Eldorado" },
   coop: { id: "coop", name: "Coop", color: "#00aa46", budgetBrand: "Xtra" },
 };
 

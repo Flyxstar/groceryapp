@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import GpsButton from "@/components/GpsButton";
 import { useAppState } from "@/lib/app-state";
 import { CHAINS, STORES } from "@/lib/data/stores";
 import { currentWeek, getCatalogue } from "@/lib/data/catalogue";
@@ -17,10 +18,13 @@ export default function CataloguesPage() {
   return (
     <div>
       <h1 className="text-2xl font-black">Veckans reklamblad · vecka {week}</h1>
-      <p className="mb-6 mt-1 text-stone-500">
+      <p className="mt-1 text-stone-500">
         Öppna ett blad, och ringa in det du vill ha med fingret eller musen – varorna hamnar
         direkt i din inköpslista.
       </p>
+      <div className="mb-6 mt-3">
+        <GpsButton />
+      </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {chains.map((c) => {
           const store = STORES.find((s) => s.chain === c)!;

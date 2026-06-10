@@ -134,6 +134,12 @@ function buildChainItems(chain: Chain): CatalogueItem[] {
   const items: CatalogueItem[] = [];
   for (const slug of CHAIN_ASSORTMENT[chain]) {
     const p = PRODUCTS.find((x) => x.slug === slug)!;
+    // Lidl säljer i princip bara egna märken – hela sortimentet blir eget
+    // märke till lågprisnivå, precis som i verkligheten.
+    if (chain === "lidl") {
+      items.push(buildItem(chain, p, true));
+      continue;
+    }
     items.push(buildItem(chain, p, false));
     if (p.budgetVariant) items.push(buildItem(chain, p, true));
   }

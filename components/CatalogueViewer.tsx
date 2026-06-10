@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import GpsButton from "@/components/GpsButton";
 import { useAppState } from "@/lib/app-state";
 import { currentWeek, getCatalogue, hash01, layoutPages } from "@/lib/data/catalogue";
 import { CHAINS, popularTimes, storeForChain } from "@/lib/data/stores";
@@ -213,6 +214,7 @@ export default function CatalogueViewer({ chain }: { chain: Chain }) {
             {info.name} · vecka {currentWeek()}
           </h1>
           <p className="text-sm text-stone-500">{storeLabel}</p>
+          {LIVE_CHAINS.includes(chain) && <GpsButton className="mt-2" />}
         </div>
         <div className="flex items-center gap-2">
           <button
