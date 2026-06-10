@@ -1,8 +1,10 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { CartLine, Chain, LatLng, TransportMode } from "@/lib/types";
+import { CartLine, CatalogueItem, Chain, LatLng, Store, TransportMode } from "@/lib/types";
 import { PRESET_HOMES } from "@/lib/geo";
+import { getItem } from "@/lib/data/catalogue";
+import { STORES } from "@/lib/data/stores";
 
 interface AppState {
   cart: CartLine[];
@@ -26,6 +28,17 @@ interface AppState {
   addCircle: (pageId: string, points: { x: number; y: number }[]) => void;
   clearCircles: () => void;
 
+  /** live offer items the user has circled (so cart/trip can resolve them) */
+  liveItems: Record<string, CatalogueItem>;
+  registerLiveItems: (items: CatalogueItem[]) => void;
+  /** the user's nearest live store per chain, once a live flyer has loaded */
+  liveStores: Partial<Record<Chain, Store>>;
+  registerLiveStore: (store: Store) => void;
+  /** resolve an item id against live items first, then the sample catalogue */
+  resolveItem: (id: string) => CatalogueItem | undefined;
+  /** resolve the store used for a chain (live nearest store, else sample) */
+  storeFor: (chain: Chain) => Store;
+
   hydrated: boolean;
 }
 
@@ -40,6 +53,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [selectedChains, setSelectedChains] = useState<Chain[]>(ALL_CHAINS);
   const [mode, setMode] = useState<TransportMode>("bike");
   const [circles, setCircles] = useState<AppState["circles"]>({});
+  const [liveItems, setLiveItems] = useState<AppState["liveItems"]>({});
+  const [liveStores, setLiveStores] = useState<AppState["liveStores"]>({});
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -53,6 +68,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         if (s.selectedChains) setSelectedChains(s.selectedChains);
         if (s.mode) setMode(s.mode);
         if (s.circles) setCircles(s.circles);
+        if (s.liveItems) setLiveItems(s.liveItems);
+        if (s.liveStores) setLiveStores(s.liveStores);
       }
     } catch {}
     setHydrated(true);
@@ -62,9 +79,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     if (!hydrated) return;
     localStorage.setItem(
       "groceryapp-state-v1",
-      JSON.stringify({ cart, home, homeLabel, selectedChains, mode, circles })
+      JSON.stringify({ cart, home, homeLabel, selectedChains, mode, circles, liveItems, liveStores })
     );
-  }, [cart, home, homeLabel, selectedChains, mode, circles, hydrated]);
+  }, [cart, home, homeLabel, selectedChains, mode, circles, liveItems, liveStores, hydrated]);
 
   const value = useMemo<AppState>(
     () => ({
@@ -105,9 +122,21 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           [pageId]: [...(prev[pageId] ?? []), { points }],
         })),
       clearCircles: () => setCircles({}),
+      liveItems,
+      registerLiveItems: (items) =>
+        setLiveItems((prev) => {
+          const next = { ...prev };
+          for (const it of items) next[it.id] = it;
+          return next;
+        }),
+      liveStores,
+      registerLiveStore: (store) =>
+        setLiveStores((prev) => ({ ...prev, [store.chain]: store })),
+      resolveItem: (id) => liveItems[id] ?? getItem(id),
+      storeFor: (chain) => liveStores[chain] ?? STORES.find((s) => s.chain === chain)!,
       hydrated,
     }),
-    [cart, home, homeLabel, selectedChains, mode, circles, hydrated]
+    [cart, home, homeLabel, selectedChains, mode, circles, liveItems, liveStores, hydrated]
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

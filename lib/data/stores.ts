@@ -14,7 +14,7 @@ export const CHAINS: Record<Chain, ChainInfo> = {
  * Weekdays peak after work (16–18), weekends peak around lunch (11–14).
  * `shift` lets stores differ a bit from each other.
  */
-function popularTimes(opens: number, closes: number, shift = 0): number[][] {
+export function popularTimes(opens: number, closes: number, shift = 0): number[][] {
   const days: number[][] = [];
   for (let d = 0; d < 7; d++) {
     const hours: number[] = [];

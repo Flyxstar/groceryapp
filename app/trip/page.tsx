@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useAppState } from "@/lib/app-state";
-import { getItem } from "@/lib/data/catalogue";
-import { CHAINS, STORES } from "@/lib/data/stores";
+import { CHAINS } from "@/lib/data/stores";
 import {
   MODES,
   busynessAt,
@@ -19,7 +18,7 @@ import { Store } from "@/lib/types";
 const DAY_NAMES = ["mån", "tis", "ons", "tors", "fre", "lör", "sön"];
 
 export default function TripPage() {
-  const { cart, home, homeLabel, mode, setMode, hydrated } = useAppState();
+  const { cart, home, homeLabel, mode, setMode, hydrated, resolveItem, storeFor } = useAppState();
   const [now, setNow] = useState<Date | null>(null);
   const [departure, setDeparture] = useState<{ hour: number; weekday: number } | null>(null);
   const [provider, setProvider] = useState<string | null>(null);
@@ -30,14 +29,14 @@ export default function TripPage() {
     const perStore = new Map<string, number>();
     const set = new Map<string, Store>();
     for (const line of cart) {
-      const item = getItem(line.itemId);
+      const item = resolveItem(line.itemId);
       if (!item) continue;
-      const store = STORES.find((s) => s.chain === item.chain)!;
+      const store = storeFor(item.chain);
       set.set(store.id, store);
       perStore.set(store.id, (perStore.get(store.id) ?? 0) + line.qty);
     }
     return { stores: [...set.values()], itemsPerStore: perStore };
-  }, [cart]);
+  }, [cart, resolveItem, storeFor]);
 
   // Ask the routing API which provider is live (Trafiklab/TomTom/OSRM or estimate)
   useEffect(() => {

@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { useAppState } from "@/lib/app-state";
-import { getItem } from "@/lib/data/catalogue";
-import { CHAINS, STORES } from "@/lib/data/stores";
+import { CHAINS } from "@/lib/data/stores";
 import { roadKm } from "@/lib/geo";
 import { formatSEK, getPriceHistory, pctChange } from "@/lib/pricing";
 import { CartLine, CatalogueItem, Store } from "@/lib/types";
@@ -16,15 +15,16 @@ interface StoreGroup {
 }
 
 export default function CartPage() {
-  const { cart, setQty, removeFromCart, clearCart, home, hydrated } = useAppState();
+  const { cart, setQty, removeFromCart, clearCart, home, hydrated, resolveItem, storeFor } =
+    useAppState();
 
   if (!hydrated) return null;
 
   const groups: StoreGroup[] = [];
   for (const line of cart) {
-    const item = getItem(line.itemId);
+    const item = resolveItem(line.itemId);
     if (!item) continue;
-    const store = STORES.find((s) => s.chain === item.chain)!;
+    const store = storeFor(item.chain);
     let g = groups.find((x) => x.store.id === store.id);
     if (!g) {
       g = { store, km: roadKm(home, store), lines: [], subtotal: 0 };
@@ -104,7 +104,12 @@ export default function CartPage() {
                 const vs6 = pctChange(hist.sixMonthsAgo, hist.current);
                 return (
                   <li key={item.id} className="flex flex-wrap items-center gap-3 px-5 py-3">
-                    <span className="text-2xl">{item.emoji}</span>
+                    {item.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={item.image} alt="" className="h-8 w-8 object-contain" />
+                    ) : (
+                      <span className="text-2xl">{item.emoji}</span>
+                    )}
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold">
                         {item.name}{" "}

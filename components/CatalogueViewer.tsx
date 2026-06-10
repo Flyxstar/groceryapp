@@ -1,12 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAppState } from "@/lib/app-state";
-import { currentWeek, getCatalogue } from "@/lib/data/catalogue";
-import { CHAINS, storeForChain } from "@/lib/data/stores";
+import { currentWeek, getCatalogue, hash01, layoutPages } from "@/lib/data/catalogue";
+import { CHAINS, popularTimes, storeForChain } from "@/lib/data/stores";
+import { haversineKm } from "@/lib/geo";
+import type { LidlFlyer } from "@/lib/integrations/lidl";
 import { formatSEK, getPriceHistory } from "@/lib/pricing";
-import { CataloguePage, Chain, PlacedItem } from "@/lib/types";
+import { CatalogueItem, CataloguePage, Chain, PlacedItem } from "@/lib/types";
+
+const LIVE_CHAINS: Chain[] = ["willys", "hemkop"];
+/** keep live flyers at a browsable size: 1 splash page + 7 grid pages */
+const MAX_LIVE_ITEMS = 61;
 
 type Pt = { x: number; y: number };
 
@@ -31,13 +37,83 @@ function pathLength(pts: Pt[]): number {
   return len;
 }
 
+type LiveStatus =
+  | { kind: "loading" }
+  | { kind: "live"; storeName: string; validUntil?: string; count: number }
+  | { kind: "sample"; reason: string };
+
 export default function CatalogueViewer({ chain }: { chain: Chain }) {
-  const pages = getCatalogue(chain);
   const info = CHAINS[chain];
-  const store = storeForChain(chain);
-  const { addToCart, circles, addCircle } = useAppState();
+  const sampleStore = storeForChain(chain);
+  const { addToCart, circles, addCircle, home, registerLiveItems, registerLiveStore, hydrated } =
+    useAppState();
   const [drawMode, setDrawMode] = useState(true);
   const [toasts, setToasts] = useState<{ id: number; text: string }[]>([]);
+  const [pages, setPages] = useState<CataloguePage[]>(() => getCatalogue(chain));
+  const [status, setStatus] = useState<LiveStatus>(() =>
+    LIVE_CHAINS.includes(chain)
+      ? { kind: "loading" }
+      : { kind: "sample", reason: "kedjan saknar öppet erbjudande-API (kräver nyckel)" }
+  );
+  const [storeLabel, setStoreLabel] = useState(`${sampleStore.name}, ${sampleStore.address}`);
+  const [lidlFlyers, setLidlFlyers] = useState<LidlFlyer[]>([]);
+
+  // Live offers: find the user's nearest store, fetch its weekly offers,
+  // typeset them as flyer pages and register the store for trip planning.
+  useEffect(() => {
+    if (!hydrated || !LIVE_CHAINS.includes(chain)) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const sres = await fetch(`/api/stores/${chain}`);
+        if (!sres.ok) throw new Error("kunde inte hämta butiker");
+        const { stores } = (await sres.json()) as {
+          stores: { id: string; name: string; address: string; lat: number; lng: number }[];
+        };
+        const nearest = stores.reduce((a, b) =>
+          haversineKm(home, a) <= haversineKm(home, b) ? a : b
+        );
+        const ores = await fetch(`/api/offers/${chain}?storeId=${nearest.id}`);
+        if (!ores.ok) throw new Error("kunde inte hämta erbjudanden");
+        const data = (await ores.json()) as { items: CatalogueItem[]; validUntil?: string };
+        if (cancelled || !data.items?.length) return;
+        setPages(layoutPages(chain, data.items.slice(0, MAX_LIVE_ITEMS)));
+        setStoreLabel(`${nearest.name} – din närmaste butik (${nearest.address})`);
+        setStatus({
+          kind: "live",
+          storeName: nearest.name,
+          validUntil: data.validUntil,
+          count: data.items.length,
+        });
+        registerLiveStore({
+          id: `${chain}-live-${nearest.id}`,
+          chain,
+          name: nearest.name,
+          address: nearest.address,
+          lat: nearest.lat,
+          lng: nearest.lng,
+          opens: 7,
+          closes: 22,
+          popularTimes: popularTimes(7, 22, hash01(nearest.id) * 2 - 1),
+        });
+      } catch (err) {
+        if (!cancelled) setStatus({ kind: "sample", reason: String(err) });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chain, hydrated, home.lat, home.lng]);
+
+  // Lidl: list the real, currently valid flyers from lidl.se
+  useEffect(() => {
+    if (chain !== "lidl") return;
+    fetch("/api/lidl-flyers")
+      .then((r) => r.json())
+      .then((d) => setLidlFlyers(d.flyers ?? []))
+      .catch(() => {});
+  }, [chain]);
 
   const toast = (text: string) => {
     const id = Date.now() + Math.random();
@@ -52,7 +128,7 @@ export default function CatalogueViewer({ chain }: { chain: Chain }) {
           <h1 className="text-2xl font-black">
             {info.name} · vecka {currentWeek()}
           </h1>
-          <p className="text-sm text-stone-500">{store.name}, {store.address}</p>
+          <p className="text-sm text-stone-500">{storeLabel}</p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -71,10 +147,62 @@ export default function CatalogueViewer({ chain }: { chain: Chain }) {
           </Link>
         </div>
       </div>
-      <p className="mb-6 rounded-xl bg-amber-50 p-3 text-sm text-amber-900">
+      <p className="mb-3 rounded-xl bg-amber-50 p-3 text-sm text-amber-900">
         ✏️ <b>Gör som i leksakskatalogen:</b> rita en ring runt varorna du vill ha så hoppar de
         ner i inköpslistan. Stäng av ringläget om du vill bläddra med fingret på mobilen.
       </p>
+
+      {status.kind === "loading" && (
+        <p className="mb-6 rounded-xl bg-sky-50 p-3 text-sm text-sky-900">
+          ⏳ Hämtar veckans riktiga erbjudanden från din närmaste {info.name}-butik…
+        </p>
+      )}
+      {status.kind === "live" && (
+        <p className="mb-6 rounded-xl bg-green-50 p-3 text-sm text-green-900">
+          🟢 <b>Live från {info.name.toLowerCase()}.se:</b> {status.count} riktiga erbjudanden i{" "}
+          {status.storeName}
+          {status.validUntil ? `, gäller t.o.m. ${status.validUntil}` : ""}. Priser, bilder och
+          medlemserbjudanden kommer direkt från butikens API.
+        </p>
+      )}
+      {status.kind === "sample" && chain !== "lidl" && (
+        <p className="mb-6 rounded-xl bg-stone-100 p-3 text-sm text-stone-600">
+          ℹ️ Visar exempeldata – {status.reason}.
+        </p>
+      )}
+
+      {chain === "lidl" && lidlFlyers.length > 0 && (
+        <section className="mb-6 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+          <h2 className="font-bold">🟢 Riktiga reklamblad från lidl.se</h2>
+          <p className="mb-3 text-xs text-stone-500">
+            Hämtas live från Lidls stabila översiktssida – veckobladen byts ut varje vecka men
+            listan här hänger med automatiskt. Bladvisaren öppnas hos Lidl; exempelbladet nedan
+            kan du ringa i som vanligt.
+          </p>
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {lidlFlyers.map((f) => (
+              <a
+                key={f.url}
+                href={f.url}
+                target="_blank"
+                rel="noreferrer"
+                className="w-36 shrink-0 overflow-hidden rounded-xl border border-stone-200 transition hover:-translate-y-0.5 hover:shadow"
+              >
+                {f.cover ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={f.cover} alt={f.title} className="h-40 w-full object-cover" />
+                ) : (
+                  <div className="flex h-40 items-center justify-center bg-blue-900 text-3xl">📰</div>
+                )}
+                <div className="p-2">
+                  <p className="truncate text-xs font-bold">{f.title}</p>
+                  <p className="truncate text-[10px] text-stone-500">{f.validity}</p>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="space-y-8">
         {pages.map((page) => (
@@ -87,6 +215,7 @@ export default function CatalogueViewer({ chain }: { chain: Chain }) {
             savedCircles={circles[page.id] ?? []}
             onCircle={(pts, hits) => {
               addCircle(page.id, pts);
+              if (status.kind === "live") registerLiveItems(hits.map((h) => h.item));
               for (const hit of hits) addToCart(hit.item.id, "catalogue");
               if (hits.length === 0) toast("Ingen vara i ringen – prova att ringa runt en ruta");
               else toast(`${hits.map((h) => h.item.emoji + " " + h.item.name).join(", ")} tillagd i listan! 🛒`);
@@ -231,7 +360,17 @@ function OfferCard({ placed, color }: { placed: PlacedItem; color: string }) {
         <div
           className={`flex items-center justify-center ${splash ? "w-1/3 text-7xl" : "w-1/3 text-4xl"}`}
         >
-          {item.emoji}
+          {item.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={item.image}
+              alt={item.name}
+              loading="lazy"
+              className="max-h-[90%] max-w-[90%] object-contain"
+            />
+          ) : (
+            item.emoji
+          )}
         </div>
         <div className="flex min-w-0 flex-1 flex-col justify-center py-1 pr-1">
           <p className={`truncate font-bold leading-tight ${splash ? "text-xl" : "text-xs sm:text-sm"}`}>

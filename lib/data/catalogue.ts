@@ -140,8 +140,9 @@ function buildChainItems(chain: Chain): CatalogueItem[] {
 
 const PAGE_TITLES = ["Veckans klipp", "Färskvaror", "Skafferi & mejeri", "Hushåll, snacks & mer"];
 
-/** Lay items out on flyer pages: first page = splash layout, rest = 2x3 grids. */
-function layoutPages(chain: Chain, items: CatalogueItem[]): CataloguePage[] {
+/** Lay items out on flyer pages: first page = splash layout, rest = 2x4 grids.
+ *  Also used to typeset live offers fetched from the chains' APIs. */
+export function layoutPages(chain: Chain, items: CatalogueItem[]): CataloguePage[] {
   const pages: CataloguePage[] = [];
   let rest = [...items];
   let pageNo = 1;

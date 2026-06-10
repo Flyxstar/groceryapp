@@ -46,19 +46,34 @@ Appen fungerar direkt utan nycklar med inbyggda estimat och exempeldata. Lägg n
 | `TOMTOM_API_KEY` | [TomTom Routing](https://developer.tomtom.com/routing-api/documentation) | Bilrutter med **live-trafik** |
 | `OSRM_URL` | [OSRM](https://project-osrm.org/) (sätt `demo` för demoservern) | Cykel- och gångrutter (trafik kvittar) |
 
-### Vad som är exempeldata i denna version
+## Live-data från butikerna
 
-- **Reklambladen**: kedjorna publicerar sina blad som PDF/e-magasin utan öppet API. I den här
-  versionen genereras bladen från en gemensam produktkatalog med realistiska prisnivåer per
-  kedja (Lidl/Willys billigast, Hemköp dyrast, lågprismärken ca 30 % under märkesvaror).
-  En produktionsversion skulle hämta och tolka bladen veckovis (PDF-parsning/OCR) och spara
-  varje varas pris i en tidsserie — prishistoriken i appen läser redan från ett sådant gränssnitt
-  (`lib/pricing.ts`).
+Två kedjor har helt öppna JSON-API:er som appen använder direkt, utan nycklar
+(`lib/integrations/axfood.ts`):
+
+- **Willys & Hemköp** – appen hämtar **alla riktiga butiker** (`/axfood/rest/store`), väljer
+  den **närmast din hemposition**, och laddar **veckans riktiga erbjudanden** för just den
+  butiken (`/search/campaigns/offline`): riktiga namn, varumärken, kampanjpriser, ordinarie
+  priser, jämförpriser, produktbilder, medlemserbjudanden och giltighetsdatum. Erbjudandena
+  sätts automatiskt som bläddringsbara reklambladssidor som du kan ringa i.
+- **Lidl** – översiktssidan `lidl.se/c/reklamblad/s10018018` är *stabil* (veckobladen bakom
+  den byts varje vecka). Appen läser den live (`lib/integrations/lidl.ts`) och visar de
+  aktuella bladen med omslag, giltighetstid och länk till Lidls bladvisare. Själva
+  bladvisaren (schwarz "leaflets"-plattformen) släpper bara igenom riktiga webbläsar­sessioner,
+  så varunivå-data går inte att hämta serverless – cirklandet sker i exempelbladet.
+
+### Fortfarande exempeldata
+
+- **ICA, Coop, City Gross**: kräver API-nycklar eller blockerar server-anrop
+  (ICA: `apimgw-pub.ica.se` med abonnemangsnyckel; Coop: `external.api.coop.se` med
+  Ocp-Apim-nyckel; City Gross: API:t svarar inte utanför webbläsaren). Deras blad genereras
+  från en produktkatalog med realistiska prisnivåer per kedja tills nycklar finns.
+- **Prishistorik**: härleds ur ordinarie pris (Axfood skickar f.ö. med
+  `offlinePromotionLowestHistoricalPrice` – en naturlig nästa utbyggnad är att spara veckans
+  priser i en tidsserie så historiken blir helt verklig).
 - **Populära tider**: Google exponerar inte "popular times" i sitt officiella Places-API, så
   kurvorna är modellerade (vardagstopp 16–18, helgtopp runt lunch). Adaptern är en ren funktion
   (`busynessAt`) som är enkel att byta mot t.ex. BestTime.app.
-- **Butiker**: sex exempelbutiker runt Stockholm. Hempositionen väljs bland förval eller via
-  enhetens GPS.
 
 ## Teknik
 

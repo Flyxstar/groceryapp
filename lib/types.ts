@@ -44,6 +44,8 @@ export interface CatalogueItem {
   unit: string; // "st", "kg", "förp", ...
   comparePrice?: string; // e.g. "39,90/kg"
   emoji: string;
+  /** real product photo (live offers); emoji is the fallback */
+  image?: string;
   category: Category;
   /** Tags used to match recipe ingredients, e.g. ["pasta"], ["kycklingfilé", "kyckling"] */
   tags: string[];
