@@ -74,6 +74,8 @@ interface TjekCatalog {
   run_from: string;
   run_till: string;
   branding?: { name?: string };
+  /** Tjek's hotspot space: width is 1, height is the page aspect (~1.46) */
+  dimensions?: { width?: number; height?: number };
 }
 
 interface TjekHotspot {
@@ -120,6 +122,11 @@ export async function fetchRealFlyers(
     ]);
 
     const offers: RealFlyerOffer[] = [];
+    // Hotspot coordinates live in a space where the page WIDTH is 1 and the
+    // page HEIGHT is the aspect ratio (e.g. 1.4634) – y must be divided by
+    // dimensions.height to become a 0..1 fraction of the page height.
+    // Getting this wrong shifts every hitbox ~46 % vertically.
+    const pageH = cat.dimensions?.height || 1.4142;
     for (const h of hotspots) {
       if (h.type !== "offer" || !h.offer) continue;
       const price = h.offer.pricing?.price;
@@ -144,7 +151,7 @@ export async function fetchRealFlyers(
           id: `${h.offer.id}-p${pageKey}`,
           offerId: h.offer.id,
           page: Number(pageKey),
-          polygon: polygon as [number, number][],
+          polygon: (polygon as [number, number][]).map(([x, y]) => [x, y / pageH]),
           heading: h.offer.heading,
           price,
           prePrice: h.offer.pricing?.pre_price ?? null,

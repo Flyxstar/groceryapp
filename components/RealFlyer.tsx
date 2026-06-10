@@ -178,12 +178,42 @@ function RealFlyerPage({
     strokeRef.current = [];
     setStroke([]);
     if (pts.length > 6 && pathLength(pts) > 14) {
-      const hits = offers
-        .filter((o) => {
+      // Two ways to hit an offer:
+      //  1. the ring encloses the offer's centre (classic circling), or
+      //  2. most of the stroke lies on top of the offer (scribbling on it).
+      const ringHits = offers.filter((o) => {
+        const b = bbox(o.polygon);
+        return inPolygon({ x: (b.x + b.w / 2) * 100, y: (b.y + b.h / 2) * 100 }, pts);
+      });
+      let chosen = ringHits;
+      if (ringHits.length === 0) {
+        let best: { offer: RealFlyerOffer; frac: number; area: number } | null = null;
+        for (const o of offers) {
           const b = bbox(o.polygon);
-          return inPolygon({ x: (b.x + b.w / 2) * 100, y: (b.y + b.h / 2) * 100 }, pts);
-        })
-        .map((offer) => {
+          const inside = pts.filter(
+            (p) =>
+              p.x >= b.x * 100 &&
+              p.x <= (b.x + b.w) * 100 &&
+              p.y >= b.y * 100 &&
+              p.y <= (b.y + b.h) * 100
+          ).length;
+          const frac = inside / pts.length;
+          if (frac < 0.55) continue;
+          const area = b.w * b.h;
+          // prefer the offer the stroke covers most; break ties on the
+          // smaller hotspot so a scribble inside a full-page spread doesn't
+          // grab the spread
+          if (
+            !best ||
+            frac > best.frac + 0.05 ||
+            (Math.abs(frac - best.frac) <= 0.05 && area < best.area)
+          ) {
+            best = { offer: o, frac, area };
+          }
+        }
+        chosen = best ? [best.offer] : [];
+      }
+      const hits = chosen.map((offer) => {
           const b = bbox(offer.polygon);
           const pageRect = ref.current?.getBoundingClientRect();
           const rect = pageRect
