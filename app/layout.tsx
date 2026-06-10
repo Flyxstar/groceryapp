@@ -16,7 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <AppStateProvider>
           <Nav />
-          <main className="mx-auto max-w-5xl px-4 pb-24 pt-6">
+          <main className="mx-auto max-w-5xl px-5 pb-24 pt-8 sm:px-8">
             <PageTransition>{children}</PageTransition>
           </main>
         </AppStateProvider>

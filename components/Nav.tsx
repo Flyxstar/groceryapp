@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
 import { useAppState } from "@/lib/app-state";
 
 const LINKS = [
@@ -16,10 +17,30 @@ export default function Nav() {
   const path = usePathname();
   const { cart, hydrated } = useAppState();
   const count = cart.reduce((a, l) => a + l.qty, 0);
+  const navRef = useRef<HTMLElement>(null);
+
+  // Dynamic blur (spec A5): scroll offset 0–240px drives --scroll 0..1,
+  // which the .glass-nav CSS maps to blur radius and saturation.
+  useEffect(() => {
+    let raf = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const x = Math.min(window.scrollY / 240, 1);
+        navRef.current?.style.setProperty("--scroll", x.toFixed(3));
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, []);
 
   return (
-    <nav className="glass-nav sticky top-0 z-50">
-      <div className="mx-auto flex max-w-5xl items-center gap-1 overflow-x-auto px-4 py-2">
+    <nav ref={navRef} className="glass-nav sticky top-0 z-50">
+      <div className="mx-auto flex max-w-5xl items-center gap-1 overflow-x-auto px-5 py-2 sm:px-8">
         <span className="mr-3 whitespace-nowrap text-lg font-black tracking-tight text-rose-600">
           ✏️ Veckans Klipp
         </span>

@@ -44,8 +44,8 @@ export default function CartPage() {
   if (groups.length === 0) {
     return (
       <div className="card border-dashed p-12 text-center">
-        <p className="text-5xl">🛒</p>
-        <h1 className="mt-3 text-xl font-bold">Din inköpslista är tom</h1>
+        <p className="empty-glyph mx-auto">🛒</p>
+        <h1 className="mt-5 text-xl font-bold">Din inköpslista är tom</h1>
         <p className="mt-1 text-stone-500">
           Ringa in varor i reklambladen eller lägg till ett recept så dyker de upp här.
         </p>

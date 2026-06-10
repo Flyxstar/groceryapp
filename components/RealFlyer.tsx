@@ -236,7 +236,7 @@ function RealFlyerPage({
         draggable={false}
         className="block w-full"
       />
-      <span className="absolute bottom-2 right-2 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur">
+      <span className="quiet absolute bottom-2 right-2 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold text-white backdrop-blur">
         sida {pageNumber}/{flyer.pageCount}
       </span>
 

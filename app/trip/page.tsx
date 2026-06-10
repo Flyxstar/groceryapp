@@ -56,8 +56,8 @@ export default function TripPage() {
   if (stores.length === 0) {
     return (
       <div className="card border-dashed p-12 text-center">
-        <p className="text-5xl">🗺️</p>
-        <h1 className="mt-3 text-xl font-bold">Inget att planera ännu</h1>
+        <p className="empty-glyph mx-auto">🗺️</p>
+        <h1 className="mt-5 text-xl font-bold">Inget att planera ännu</h1>
         <p className="mt-1 text-stone-500">Lägg varor i listan först, så planerar vi rundan.</p>
         <Link
           href="/catalogues"
