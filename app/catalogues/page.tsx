@@ -34,7 +34,7 @@ export default function CataloguesPage() {
             <Link
               key={c}
               href={`/catalogues/${c}`}
-              className="group overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+              className="group card card-hover overflow-hidden"
             >
               <div
                 className="flex h-28 items-center justify-center text-3xl font-black text-white"

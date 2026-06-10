@@ -18,7 +18,7 @@ export default function Nav() {
   const count = cart.reduce((a, l) => a + l.qty, 0);
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-stone-200 bg-white/90 backdrop-blur">
+    <nav className="glass-nav sticky top-0 z-50">
       <div className="mx-auto flex max-w-5xl items-center gap-1 overflow-x-auto px-4 py-2">
         <span className="mr-3 whitespace-nowrap text-lg font-black tracking-tight text-rose-600">
           ✏️ Veckans Klipp

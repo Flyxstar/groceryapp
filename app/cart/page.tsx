@@ -43,7 +43,7 @@ export default function CartPage() {
 
   if (groups.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-stone-300 bg-white p-12 text-center">
+      <div className="card border-dashed p-12 text-center">
         <p className="text-5xl">🛒</p>
         <h1 className="mt-3 text-xl font-bold">Din inköpslista är tom</h1>
         <p className="mt-1 text-stone-500">
@@ -82,7 +82,7 @@ export default function CartPage() {
         {groups.map((g, idx) => (
           <section
             key={g.store.id}
-            className="overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm"
+            className="card overflow-hidden"
           >
             <header
               className="flex flex-wrap items-center justify-between gap-2 px-5 py-3 text-white"
@@ -144,7 +144,7 @@ export default function CartPage() {
                         +
                       </button>
                     </div>
-                    <div className="w-24 text-right font-bold">
+                    <div className="tnum w-24 text-right font-bold">
                       {formatSEK(item.price * line.qty)}
                     </div>
                     <button
@@ -166,13 +166,13 @@ export default function CartPage() {
         ))}
       </div>
 
-      <div className="mt-6 rounded-2xl bg-stone-900 p-6 text-white">
+      <div className="mt-6 glass-dark rounded-2xl p-6 text-white">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm text-stone-300">
               Totalt {cart.reduce((a, l) => a + l.qty, 0)} varor i {groups.length} butiker
             </p>
-            <p className="text-3xl font-black">{formatSEK(grandTotal)}</p>
+            <p className="tnum text-3xl font-black">{formatSEK(grandTotal)}</p>
             <p className="text-sm text-green-400">
               Du sparar {formatSEK(ordinaryTotal - grandTotal)} mot ordinarie priser 🎉
             </p>

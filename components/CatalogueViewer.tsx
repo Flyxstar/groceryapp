@@ -261,7 +261,7 @@ export default function CatalogueViewer({ chain }: { chain: Chain }) {
       )}
 
       {chain === "lidl" && lidlFlyers.length > 0 && (
-        <section className="mb-6 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+        <section className="mb-6 card p-4">
           <h2 className="font-bold">🟢 Riktiga reklamblad från lidl.se</h2>
           <p className="mb-3 text-xs text-stone-500">
             Hämtas live från Lidls stabila översiktssida – veckobladen byts ut varje vecka men
@@ -337,7 +337,7 @@ export default function CatalogueViewer({ chain }: { chain: Chain }) {
         {toasts.map((t) => (
           <div
             key={t.id}
-            className="toast-in flex max-w-md items-center gap-2 rounded-full bg-stone-900/90 py-2 pl-2.5 pr-5 text-center text-sm font-semibold text-white shadow-2xl backdrop-blur"
+            className="toast-in glass-dark flex max-w-md items-center gap-2 rounded-full py-2 pl-2.5 pr-5 text-center text-sm font-semibold text-white shadow-2xl"
           >
             {t.images.length > 0 && (
               <span className="flex -space-x-2">

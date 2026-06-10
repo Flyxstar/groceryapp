@@ -26,14 +26,14 @@ export default function RecipesPage() {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Sök recept, ingrediens eller t.ex. ”budget”…"
-        className="mt-4 w-full rounded-full border border-stone-300 bg-white px-5 py-2.5 outline-none focus:border-rose-500"
+        className="mt-4 w-full rounded-full border border-white/70 bg-white/75 px-5 py-2.5 shadow-sm outline-none backdrop-blur-xl transition focus:border-rose-400 focus:shadow-md"
       />
       <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {recipes.map((r) => (
           <Link
             key={r.id}
             href={`/recipes/${r.id}`}
-            className="group overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+            className="group card card-hover overflow-hidden"
           >
             <div
               className="flex h-40 items-center justify-center text-7xl transition group-hover:scale-110"

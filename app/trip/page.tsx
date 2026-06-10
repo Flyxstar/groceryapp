@@ -55,7 +55,7 @@ export default function TripPage() {
 
   if (stores.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-stone-300 bg-white p-12 text-center">
+      <div className="card border-dashed p-12 text-center">
         <p className="text-5xl">🗺️</p>
         <h1 className="mt-3 text-xl font-bold">Inget att planera ännu</h1>
         <p className="mt-1 text-stone-500">Lägg varor i listan först, så planerar vi rundan.</p>
@@ -95,7 +95,7 @@ export default function TripPage() {
           <button
             key={m.id}
             onClick={() => setMode(m.id)}
-            className={`rounded-full border px-4 py-2 text-sm font-semibold ${
+            className={`pressable rounded-full border px-4 py-2 text-sm font-semibold ${
               mode === m.id
                 ? "border-stone-900 bg-stone-900 text-white"
                 : "border-stone-300 bg-white hover:bg-stone-50"
@@ -107,12 +107,12 @@ export default function TripPage() {
       </div>
 
       {/* When to go */}
-      <section className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+      <section className="card p-5">
         <h2 className="font-bold">⏰ När vill du åka?</h2>
         <div className="mt-3 flex flex-wrap gap-2">
           <button
             onClick={() => setDeparture(null)}
-            className={`rounded-xl border px-4 py-2 text-left text-sm ${
+            className={`pressable rounded-xl border px-4 py-2 text-left text-sm ${
               departure === null ? "border-rose-600 bg-rose-50" : "border-stone-200 hover:bg-stone-50"
             }`}
           >
@@ -126,7 +126,7 @@ export default function TripPage() {
               <button
                 key={`${s.weekday}-${s.hour}`}
                 onClick={() => setDeparture({ hour: s.hour, weekday: s.weekday })}
-                className={`rounded-xl border px-4 py-2 text-left text-sm ${
+                className={`pressable rounded-xl border px-4 py-2 text-left text-sm ${
                   active ? "border-rose-600 bg-rose-50" : "border-stone-200 hover:bg-stone-50"
                 }`}
               >
@@ -148,7 +148,7 @@ export default function TripPage() {
       </section>
 
       {/* The plan */}
-      <section className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+      <section className="card p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-bold">
             🧭 Din runda {DAY_NAMES[dep.weekday]} kl {String(dep.hour).padStart(2, "0")}:00
@@ -205,7 +205,7 @@ export default function TripPage() {
       </section>
 
       {/* Busyness per store */}
-      <section className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+      <section className="card p-5">
         <h2 className="font-bold">📊 Hur fullt är det i butikerna?</h2>
         <p className="mb-4 text-sm text-stone-500">
           Som Googles &quot;populära tider&quot; – stapeln för din valda timme är markerad.

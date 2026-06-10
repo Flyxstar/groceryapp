@@ -32,7 +32,7 @@ export default function Home() {
 
   return (
     <div className="space-y-8">
-      <header className="rounded-3xl bg-gradient-to-br from-rose-600 to-orange-500 p-8 text-white shadow-lg">
+      <header className="relative overflow-hidden rounded-3xl p-8 text-white shadow-[0_24px_60px_-20px_rgba(225,29,72,0.5)]" style={{ background: "linear-gradient(125deg,#be123c 0%,#e11d48 35%,#f97316 100%)" }}>
         <h1 className="text-3xl font-black sm:text-4xl">
           Ringa in veckans klipp ✏️
         </h1>
@@ -58,7 +58,7 @@ export default function Home() {
       </header>
 
       <section className="grid gap-6 md:grid-cols-2">
-        <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+        <div className="card p-5">
           <h2 className="font-bold">📍 Var bor du?</h2>
           <p className="mb-3 text-sm text-stone-500">
             Används för att sortera butiker efter avstånd och räkna ut restider.
@@ -97,7 +97,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+        <div className="card p-5">
           <h2 className="font-bold">🏪 Dina butiker</h2>
           <p className="mb-3 text-sm text-stone-500">
             Välj vilka kedjor du vill se reklamblad och priser från.
@@ -138,7 +138,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+      <section className="card p-5">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-bold">Läget just nu</h2>
           <span

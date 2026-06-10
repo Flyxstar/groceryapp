@@ -71,7 +71,7 @@ export default function RecipeDetail({ recipe }: { recipe: Recipe }) {
       <RecipeHero recipe={recipe} />
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+        <section className="card p-5">
           <h2 className="font-bold">🧂 Ingredienser ({recipe.servings} port)</h2>
           <ul className="mt-3 space-y-1.5 text-sm">
             {recipe.ingredients.map((i) => (
@@ -91,7 +91,7 @@ export default function RecipeDetail({ recipe }: { recipe: Recipe }) {
           </ol>
         </section>
 
-        <section className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+        <section className="card p-5">
           <h2 className="font-bold">🏷️ Vilka varor vill du ha?</h2>
           <div className="mt-3 flex flex-wrap gap-2">
             {PREFS.map((p) => (

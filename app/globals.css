@@ -1,8 +1,16 @@
 @import "tailwindcss";
 
+/* ———————————————————————————————————————————————
+   Design tokens
+   ——————————————————————————————————————————————— */
 :root {
-  --background: #f7f6f3;
-  --foreground: #1c1c1a;
+  --background: #f6f5f2;
+  --foreground: #1a1a18;
+  --accent: #e11d48;
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --shadow-card: 0 1px 2px rgba(28, 28, 26, 0.04), 0 8px 24px -8px rgba(28, 28, 26, 0.12);
+  --shadow-card-hover: 0 2px 4px rgba(28, 28, 26, 0.05), 0 16px 40px -12px rgba(28, 28, 26, 0.18);
 }
 
 html {
@@ -10,18 +18,86 @@ html {
 }
 
 body {
-  background: var(--background);
   color: var(--foreground);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* soft ambient color wash, like a frosted desk surface */
+  background:
+    radial-gradient(1100px 500px at 85% -10%, rgba(225, 29, 72, 0.06), transparent 60%),
+    radial-gradient(900px 450px at -10% 10%, rgba(2, 132, 199, 0.05), transparent 55%),
+    radial-gradient(800px 500px at 50% 110%, rgba(217, 119, 6, 0.05), transparent 55%),
+    var(--background);
+  background-attachment: fixed;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", ui-sans-serif,
+    system-ui, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  font-feature-settings: "cv11" 1, "ss01" 1;
+}
+
+h1, h2, h3 {
+  letter-spacing: -0.02em;
 }
 
 button {
   cursor: pointer;
 }
 
-/* Hand-drawn marker stroke for catalogue circles */
+::selection {
+  background: rgba(225, 29, 72, 0.18);
+}
+
+:focus-visible {
+  outline: 2px solid rgba(225, 29, 72, 0.7);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* subtle, macOS-like scrollbars where supported */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(28, 28, 26, 0.18) transparent;
+}
+
+/* prices and totals align like a receipt */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ———————————————————————————————————————————————
+   Glass surfaces
+   ——————————————————————————————————————————————— */
+.card {
+  border-radius: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.25s var(--ease-out), transform 0.25s var(--ease-out);
+}
+
+.card-hover:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+}
+
+.glass-nav {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(24px) saturate(1.8);
+  -webkit-backdrop-filter: blur(24px) saturate(1.8);
+  border-bottom: 1px solid rgba(28, 28, 26, 0.06);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset;
+}
+
+.glass-dark {
+  background: rgba(20, 20, 18, 0.82);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ———————————————————————————————————————————————
+   Catalogue marker & flyer
+   ——————————————————————————————————————————————— */
 .marker-stroke {
   stroke: #e11d48;
   stroke-width: 0.8;
@@ -37,34 +113,41 @@ button {
   touch-action: none;
 }
 
-/* ——— micro-interactions ——— */
+/* ———————————————————————————————————————————————
+   Motion
+   ——————————————————————————————————————————————— */
+@keyframes page-enter {
+  0% { opacity: 0; transform: translateY(10px) scale(0.995); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.page-enter { animation: page-enter 0.35s var(--ease-out); }
 
 @keyframes pop-in {
   0% { transform: scale(0.6); opacity: 0; }
   70% { transform: scale(1.08); }
   100% { transform: scale(1); opacity: 1; }
 }
-.pop-in { animation: pop-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.pop-in { animation: pop-in 0.25s var(--ease-spring); }
 
 @keyframes check-pop {
   0% { transform: scale(0.3) rotate(-12deg); }
   60% { transform: scale(1.25) rotate(3deg); }
   100% { transform: scale(1) rotate(0); }
 }
-.check-pop { animation: check-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.check-pop { animation: check-pop 0.3s var(--ease-spring); }
 
 @keyframes badge-bump {
   0% { transform: scale(1); }
   40% { transform: scale(1.45); }
   100% { transform: scale(1); }
 }
-.badge-bump { animation: badge-bump 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.badge-bump { animation: badge-bump 0.35s var(--ease-spring); }
 
 @keyframes toast-in {
   0% { transform: translateY(16px) scale(0.92); opacity: 0; }
   100% { transform: translateY(0) scale(1); opacity: 1; }
 }
-.toast-in { animation: toast-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.toast-in { animation: toast-in 0.3s var(--ease-spring); }
 
 @keyframes shimmer {
   0% { background-position: -400px 0; }
@@ -78,13 +161,12 @@ button {
 
 /* cards & buttons feel physical: lift on hover, sink on press */
 .pressable {
-  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s ease;
+  transition: transform 0.15s var(--ease-out), box-shadow 0.15s ease, background-color 0.15s ease;
 }
 .pressable:active { transform: scale(0.96); }
 
 .offer-card {
-  transition: transform 0.18s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.18s ease,
-    border-color 0.18s ease;
+  transition: transform 0.18s var(--ease-out), box-shadow 0.18s ease, border-color 0.18s ease;
 }
 @media (hover: hover) {
   .offer-card:hover {
@@ -100,6 +182,6 @@ button {
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .pop-in, .check-pop, .badge-bump, .toast-in, .shimmer { animation: none; }
-  .pressable, .offer-card { transition: none; }
+  .page-enter, .pop-in, .check-pop, .badge-bump, .toast-in, .shimmer { animation: none; }
+  .pressable, .offer-card, .card { transition: none; }
 }
