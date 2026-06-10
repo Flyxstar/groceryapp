@@ -5,10 +5,20 @@
   --foreground: #1c1c1a;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button {
+  cursor: pointer;
 }
 
 /* Hand-drawn marker stroke for catalogue circles */
@@ -27,9 +37,69 @@ body {
   touch-action: none;
 }
 
+/* ——— micro-interactions ——— */
+
 @keyframes pop-in {
   0% { transform: scale(0.6); opacity: 0; }
   70% { transform: scale(1.08); }
   100% { transform: scale(1); opacity: 1; }
 }
-.pop-in { animation: pop-in 0.25s ease-out; }
+.pop-in { animation: pop-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+@keyframes check-pop {
+  0% { transform: scale(0.3) rotate(-12deg); }
+  60% { transform: scale(1.25) rotate(3deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+.check-pop { animation: check-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+@keyframes badge-bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.45); }
+  100% { transform: scale(1); }
+}
+.badge-bump { animation: badge-bump 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+@keyframes toast-in {
+  0% { transform: translateY(16px) scale(0.92); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+.toast-in { animation: toast-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.shimmer {
+  background: linear-gradient(90deg, #ececea 25%, #f8f8f6 50%, #ececea 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+/* cards & buttons feel physical: lift on hover, sink on press */
+.pressable {
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s ease;
+}
+.pressable:active { transform: scale(0.96); }
+
+.offer-card {
+  transition: transform 0.18s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+@media (hover: hover) {
+  .offer-card:hover {
+    transform: translateY(-2px) scale(1.015);
+    box-shadow: 0 8px 20px rgba(28, 28, 26, 0.1);
+    z-index: 5;
+  }
+}
+.offer-card.in-cart {
+  border-color: #16a34a;
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .pop-in, .check-pop, .badge-bump, .toast-in, .shimmer { animation: none; }
+  .pressable, .offer-card { transition: none; }
+}

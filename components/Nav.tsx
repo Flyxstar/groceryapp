@@ -29,13 +29,17 @@ export default function Nav() {
             <Link
               key={l.href}
               href={l.href}
-              className={`relative whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition ${
+              id={l.href === "/cart" ? "nav-cart" : undefined}
+              className={`pressable relative whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition ${
                 active ? "bg-stone-900 text-white" : "text-stone-600 hover:bg-stone-100"
               }`}
             >
               {l.emoji} {l.label}
               {l.href === "/cart" && hydrated && count > 0 && (
-                <span className="pop-in absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-600 px-1 text-[11px] font-bold text-white">
+                <span
+                  key={count}
+                  className="badge-bump absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-600 px-1 text-[11px] font-bold text-white shadow-md"
+                >
                   {count}
                 </span>
               )}

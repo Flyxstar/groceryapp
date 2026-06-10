@@ -1,5 +1,6 @@
 import { CataloguePage, CatalogueItem, Category, Chain, PlacedItem } from "@/lib/types";
 import { CHAINS } from "@/lib/data/stores";
+import { PRODUCT_IMAGES } from "@/lib/data/product-images";
 
 /** Deterministic tiny hash → 0..1, so prices are stable between runs. */
 export function hash01(s: string): number {
@@ -121,6 +122,7 @@ function buildItem(chain: Chain, p: CanonicalProduct, budget: boolean): Catalogu
     unit: p.unit,
     comparePrice: p.comparePer ? `${price.toFixed(2).replace(".", ",")}/${p.comparePer}` : undefined,
     emoji: p.emoji,
+    image: PRODUCT_IMAGES[p.slug],
     category: p.category,
     tags: p.tags,
     isBudgetBrand: budget,

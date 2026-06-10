@@ -145,7 +145,7 @@ export default function RecipeDetail({ recipe }: { recipe: Recipe }) {
                     <button
                       onClick={() => addPlan(plan)}
                       disabled={plan.matches.every((m) => !m.item)}
-                      className="rounded-full bg-stone-900 px-4 py-1.5 text-sm font-bold text-white hover:bg-stone-700 disabled:opacity-40"
+                      className="pressable rounded-full bg-stone-900 px-4 py-1.5 text-sm font-bold text-white hover:bg-stone-700 disabled:opacity-40"
                     >
                       + Lägg i listan
                     </button>
@@ -154,8 +154,18 @@ export default function RecipeDetail({ recipe }: { recipe: Recipe }) {
                     <ul className="mt-2 space-y-1 border-t border-rose-100 pt-2 text-xs text-stone-600">
                       {plan.matches.map((m) => (
                         <li key={m.ingredient.name} className="flex justify-between gap-2">
-                          <span>
-                            {m.item ? m.item.emoji : "❓"} {m.ingredient.name}
+                          <span className="flex items-center gap-1.5">
+                            {m.item?.image ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={m.item.image}
+                                alt=""
+                                className="h-5 w-5 rounded bg-white object-contain"
+                              />
+                            ) : (
+                              <span>{m.item ? m.item.emoji : "❓"}</span>
+                            )}
+                            {m.ingredient.name}
                             {m.count > 1 ? ` ×${m.count}` : ""}
                           </span>
                           {m.item ? (

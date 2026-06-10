@@ -132,14 +132,14 @@ export default function CartPage() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => setQty(item.id, line.qty - 1)}
-                        className="h-7 w-7 rounded-full border border-stone-300 font-bold hover:bg-stone-100"
+                        className="pressable h-7 w-7 rounded-full border border-stone-300 font-bold hover:bg-stone-100"
                       >
                         −
                       </button>
                       <span className="w-6 text-center font-bold">{line.qty}</span>
                       <button
                         onClick={() => setQty(item.id, line.qty + 1)}
-                        className="h-7 w-7 rounded-full border border-stone-300 font-bold hover:bg-stone-100"
+                        className="pressable h-7 w-7 rounded-full border border-stone-300 font-bold hover:bg-stone-100"
                       >
                         +
                       </button>
@@ -179,7 +179,7 @@ export default function CartPage() {
           </div>
           <Link
             href="/trip"
-            className="rounded-full bg-rose-600 px-6 py-3 font-bold text-white hover:bg-rose-500"
+            className="pressable rounded-full bg-rose-600 px-6 py-3 font-bold text-white hover:bg-rose-500"
           >
             🗺️ Planera rundan & bästa tid →
           </Link>

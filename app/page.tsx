@@ -44,13 +44,13 @@ export default function Home() {
         <div className="mt-4 flex flex-wrap gap-3">
           <Link
             href="/catalogues"
-            className="rounded-full bg-white px-5 py-2 font-bold text-rose-600 shadow hover:bg-rose-50"
+            className="pressable rounded-full bg-white px-5 py-2 font-bold text-rose-600 shadow hover:bg-rose-50"
           >
             📰 Öppna reklambladen
           </Link>
           <Link
             href="/recipes"
-            className="rounded-full bg-rose-700/60 px-5 py-2 font-bold text-white hover:bg-rose-700"
+            className="pressable rounded-full bg-rose-700/60 px-5 py-2 font-bold text-white hover:bg-rose-700"
           >
             🍳 Hitta recept
           </Link>
