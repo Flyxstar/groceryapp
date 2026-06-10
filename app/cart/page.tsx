@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import ChainLogo from "@/components/ChainLogo";
 import { useAppState } from "@/lib/app-state";
 import { CHAINS } from "@/lib/data/stores";
 import { roadKm } from "@/lib/geo";
@@ -88,10 +89,11 @@ export default function CartPage() {
               className="flex flex-wrap items-center justify-between gap-2 px-5 py-3 text-white"
               style={{ background: CHAINS[g.store.chain].color }}
             >
-              <div>
-                <span className="mr-2 rounded-full bg-white/25 px-2 py-0.5 text-xs font-bold">
+              <div className="flex items-center gap-2">
+                <span className="rounded-full bg-white/25 px-2 py-0.5 text-xs font-bold">
                   Stopp {idx + 1}
                 </span>
+                <ChainLogo chain={g.store.chain} size="sm" />
                 <span className="font-black">{g.store.name}</span>
               </div>
               <span className="text-sm font-semibold">

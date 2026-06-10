@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import ChainLogo from "@/components/ChainLogo";
 import GpsButton from "@/components/GpsButton";
 import RealFlyerView, { offerToItem } from "@/components/RealFlyer";
 import { useAppState } from "@/lib/app-state";
@@ -238,8 +239,9 @@ export default function CatalogueViewer({ chain }: { chain: Chain }) {
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-black">
-            {info.name} · vecka {currentWeek()}
+          <h1 className="flex items-center gap-2.5 text-2xl font-black">
+            <ChainLogo chain={chain} />
+            <span>{info.name} · vecka {currentWeek()}</span>
           </h1>
           <p className="text-sm text-stone-500">{storeLabel}</p>
           {LIVE_CHAINS.includes(chain) && <GpsButton className="mt-2" />}

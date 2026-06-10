@@ -8,12 +8,12 @@ import { Chain, ChainInfo, Store } from "@/lib/types";
  * - Lidl säljer i princip bara egna märken, därför är "märket" här Lidl.
  */
 export const CHAINS: Record<Chain, ChainInfo> = {
-  lidl: { id: "lidl", name: "Lidl", color: "#0050aa", budgetBrand: "Lidl" },
-  ica: { id: "ica", name: "ICA", color: "#e3000b", budgetBrand: "ICA Basic" },
-  citygross: { id: "citygross", name: "City Gross", color: "#003da5", budgetBrand: "Favorit" },
-  willys: { id: "willys", name: "Willys", color: "#e30613", budgetBrand: "Eldorado" },
-  hemkop: { id: "hemkop", name: "Hemköp", color: "#d10a11", budgetBrand: "Eldorado" },
-  coop: { id: "coop", name: "Coop", color: "#00aa46", budgetBrand: "Xtra" },
+  lidl: { id: "lidl", name: "Lidl", color: "#0050aa", budgetBrand: "Lidl", logo: "/logos/lidl.png" },
+  ica: { id: "ica", name: "ICA", color: "#e3000b", budgetBrand: "ICA Basic", logo: "/logos/ica.png" },
+  citygross: { id: "citygross", name: "City Gross", color: "#003da5", budgetBrand: "Favorit", logo: "/logos/citygross.png" },
+  willys: { id: "willys", name: "Willys", color: "#e30613", budgetBrand: "Eldorado", logo: "/logos/willys.png" },
+  hemkop: { id: "hemkop", name: "Hemköp", color: "#d10a11", budgetBrand: "Eldorado", logo: "/logos/hemkop.svg" },
+  coop: { id: "coop", name: "Coop", color: "#00aa46", budgetBrand: "Xtra", logo: "/logos/coop.png" },
 };
 
 /**

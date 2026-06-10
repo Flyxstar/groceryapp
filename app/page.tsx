@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import ChainLogo from "@/components/ChainLogo";
 import { useAppState } from "@/lib/app-state";
 import { currentWeek } from "@/lib/data/catalogue";
 import { CHAINS, STORES } from "@/lib/data/stores";
@@ -119,10 +120,7 @@ export default function Home() {
             const open = hour >= s.opens && hour < s.closes;
             return (
               <div key={s.id} className="flex min-h-[44px] items-center gap-3 px-4 py-3">
-                <span
-                  className="h-2.5 w-2.5 shrink-0 rounded-full"
-                  style={{ background: CHAINS[s.chain].color }}
-                />
+                <ChainLogo chain={s.chain} size="sm" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold">{s.name}</p>
                   <p className="text-xs font-light text-stone-500">
@@ -201,10 +199,7 @@ export default function Home() {
                 aria-checked={on}
                 className="flex min-h-[44px] w-full items-center gap-3 px-4 py-2.5 text-left transition hover:bg-stone-50"
               >
-                <span
-                  className="h-2.5 w-2.5 shrink-0 rounded-full"
-                  style={{ background: CHAINS[c].color }}
-                />
+                <ChainLogo chain={c} size="sm" />
                 <span className="flex-1 text-sm font-semibold">{CHAINS[c].name}</span>
                 <span className="ios-switch" data-on={on} aria-hidden="true" />
               </button>

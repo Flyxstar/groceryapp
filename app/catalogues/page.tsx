@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import ChainLogo from "@/components/ChainLogo";
 import GpsButton from "@/components/GpsButton";
 import { useAppState } from "@/lib/app-state";
 import { CHAINS, STORES } from "@/lib/data/stores";
@@ -37,10 +38,10 @@ export default function CataloguesPage() {
               className="group card card-hover overflow-hidden"
             >
               <div
-                className="flex h-28 items-center justify-center text-3xl font-black text-white"
+                className="flex h-28 items-center justify-center"
                 style={{ background: CHAINS[c].color }}
               >
-                {CHAINS[c].name}
+                <ChainLogo chain={c} size="lg" labeled />
               </div>
               <div className="p-4">
                 <p className="font-semibold">Vecka {week} · {pages.length} sidor</p>

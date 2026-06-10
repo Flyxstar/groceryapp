@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import ChainLogo from "@/components/ChainLogo";
 import GpsButton from "@/components/GpsButton";
 import { useAppState } from "@/lib/app-state";
 import { CHAINS } from "@/lib/data/stores";
@@ -234,10 +235,7 @@ function BusyChart({
   return (
     <div>
       <div className="mb-1 flex items-center gap-2 text-sm font-semibold">
-        <span
-          className="inline-block h-3 w-3 rounded-full"
-          style={{ background: CHAINS[store.chain].color }}
-        />
+        <ChainLogo chain={store.chain} size="sm" />
         {store.name}
       </div>
       <div className="flex h-16 items-end gap-[3px]">

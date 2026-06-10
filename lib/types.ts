@@ -5,6 +5,8 @@ export interface ChainInfo {
   name: string;
   color: string; // brand-ish color for flyer headers
   budgetBrand: string; // the chain's low-price own brand
+  /** official logo, served from /public/logos */
+  logo: string;
 }
 
 export interface Store {
