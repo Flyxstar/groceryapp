@@ -1,0 +1,274 @@
+"use client";
+
+import Link from "next/link";
+import { useRef, useState } from "react";
+import { useAppState } from "@/lib/app-state";
+import { currentWeek, getCatalogue } from "@/lib/data/catalogue";
+import { CHAINS, storeForChain } from "@/lib/data/stores";
+import { formatSEK, getPriceHistory } from "@/lib/pricing";
+import { CataloguePage, Chain, PlacedItem } from "@/lib/types";
+
+type Pt = { x: number; y: number };
+
+/** Ray-casting point-in-polygon, coordinates in page-percent space. */
+function inPolygon(p: Pt, poly: Pt[]): boolean {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const a = poly[i];
+    const b = poly[j];
+    if (a.y > p.y !== b.y > p.y && p.x < ((b.x - a.x) * (p.y - a.y)) / (b.y - a.y) + a.x) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+function pathLength(pts: Pt[]): number {
+  let len = 0;
+  for (let i = 1; i < pts.length; i++) {
+    len += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y);
+  }
+  return len;
+}
+
+export default function CatalogueViewer({ chain }: { chain: Chain }) {
+  const pages = getCatalogue(chain);
+  const info = CHAINS[chain];
+  const store = storeForChain(chain);
+  const { addToCart, circles, addCircle } = useAppState();
+  const [drawMode, setDrawMode] = useState(true);
+  const [toasts, setToasts] = useState<{ id: number; text: string }[]>([]);
+
+  const toast = (text: string) => {
+    const id = Date.now() + Math.random();
+    setToasts((t) => [...t, { id, text }]);
+    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 2200);
+  };
+
+  return (
+    <div>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-black">
+            {info.name} · vecka {currentWeek()}
+          </h1>
+          <p className="text-sm text-stone-500">{store.name}, {store.address}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setDrawMode((d) => !d)}
+            className={`rounded-full px-4 py-2 text-sm font-bold transition ${
+              drawMode ? "bg-rose-600 text-white shadow" : "border border-stone-300 bg-white"
+            }`}
+          >
+            {drawMode ? "✏️ Ringa in: PÅ" : "👆 Ringa in: AV (bläddra)"}
+          </button>
+          <Link
+            href="/cart"
+            className="rounded-full bg-stone-900 px-4 py-2 text-sm font-bold text-white"
+          >
+            🛒 Till listan
+          </Link>
+        </div>
+      </div>
+      <p className="mb-6 rounded-xl bg-amber-50 p-3 text-sm text-amber-900">
+        ✏️ <b>Gör som i leksakskatalogen:</b> rita en ring runt varorna du vill ha så hoppar de
+        ner i inköpslistan. Stäng av ringläget om du vill bläddra med fingret på mobilen.
+      </p>
+
+      <div className="space-y-8">
+        {pages.map((page) => (
+          <FlyerPage
+            key={page.id}
+            page={page}
+            color={info.color}
+            chainName={info.name}
+            drawMode={drawMode}
+            savedCircles={circles[page.id] ?? []}
+            onCircle={(pts, hits) => {
+              addCircle(page.id, pts);
+              for (const hit of hits) addToCart(hit.item.id, "catalogue");
+              if (hits.length === 0) toast("Ingen vara i ringen – prova att ringa runt en ruta");
+              else toast(`${hits.map((h) => h.item.emoji + " " + h.item.name).join(", ")} tillagd i listan! 🛒`);
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="pointer-events-none fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-2">
+        {toasts.map((t) => (
+          <div
+            key={t.id}
+            className="pop-in max-w-md rounded-full bg-stone-900 px-5 py-2.5 text-center text-sm font-semibold text-white shadow-xl"
+          >
+            {t.text}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FlyerPage({
+  page,
+  color,
+  chainName,
+  drawMode,
+  savedCircles,
+  onCircle,
+}: {
+  page: CataloguePage;
+  color: string;
+  chainName: string;
+  drawMode: boolean;
+  savedCircles: { points: Pt[] }[];
+  onCircle: (pts: Pt[], hits: PlacedItem[]) => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [stroke, setStroke] = useState<Pt[]>([]);
+  const drawing = useRef(false);
+
+  const toPct = (e: React.PointerEvent): Pt => {
+    const r = ref.current!.getBoundingClientRect();
+    return {
+      x: ((e.clientX - r.left) / r.width) * 100,
+      y: ((e.clientY - r.top) / r.height) * 100,
+    };
+  };
+
+  const finish = () => {
+    if (!drawing.current) return;
+    drawing.current = false;
+    setStroke((pts) => {
+      if (pts.length > 6 && pathLength(pts) > 18) {
+        const hits = page.items.filter((pi) =>
+          inPolygon({ x: pi.x + pi.w / 2, y: pi.y + pi.h / 2 }, pts)
+        );
+        onCircle(pts, hits);
+      }
+      return [];
+    });
+  };
+
+  const toPath = (pts: Pt[]) =>
+    pts.length ? "M " + pts.map((p) => `${p.x.toFixed(2)} ${p.y.toFixed(2)}`).join(" L ") : "";
+
+  return (
+    <div
+      ref={ref}
+      className="flyer-page relative mx-auto w-full max-w-2xl select-none overflow-hidden rounded-xl border border-stone-300 bg-white shadow-md"
+      style={{ touchAction: drawMode ? "none" : "auto" }}
+      onPointerDown={(e) => {
+        if (!drawMode) return;
+        drawing.current = true;
+        (e.target as Element).setPointerCapture?.(e.pointerId);
+        setStroke([toPct(e)]);
+      }}
+      onPointerMove={(e) => {
+        if (!drawing.current) return;
+        setStroke((pts) => [...pts, toPct(e)]);
+      }}
+      onPointerUp={finish}
+      onPointerCancel={finish}
+      onPointerLeave={finish}
+    >
+      {/* flyer header */}
+      <div
+        className="absolute inset-x-0 top-0 flex h-[9%] items-center justify-between px-4 text-white"
+        style={{ background: color }}
+      >
+        <span className="text-lg font-black">{chainName}</span>
+        <span className="text-sm font-semibold">
+          {page.title} · sida {page.pageNumber}
+        </span>
+      </div>
+
+      {/* offer cards */}
+      {page.items.map((pi) => (
+        <OfferCard key={pi.item.id} placed={pi} color={color} />
+      ))}
+
+      {/* drawn circles overlay */}
+      <svg
+        className="pointer-events-none absolute inset-0 h-full w-full"
+        viewBox="0 0 100 133.33"
+        preserveAspectRatio="none"
+      >
+        <defs>
+          <filter id="marker-rough">
+            <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" result="n" />
+            <feDisplacementMap in="SourceGraphic" in2="n" scale="1.6" />
+          </filter>
+        </defs>
+        {savedCircles.map((c, i) => (
+          <path
+            key={i}
+            className="marker-stroke"
+            d={toPath(c.points.map((p) => ({ x: p.x, y: (p.y * 133.33) / 100 }))) + " Z"}
+          />
+        ))}
+        {stroke.length > 1 && (
+          <path
+            className="marker-stroke"
+            d={toPath(stroke.map((p) => ({ x: p.x, y: (p.y * 133.33) / 100 })))}
+          />
+        )}
+      </svg>
+    </div>
+  );
+}
+
+function OfferCard({ placed, color }: { placed: PlacedItem; color: string }) {
+  const { item, x, y, w, h, splash } = placed;
+  const hist = getPriceHistory(item);
+  const discount = Math.round((1 - item.price / item.ordinaryPrice) * 100);
+  return (
+    <div
+      className="absolute overflow-hidden rounded-lg border border-stone-200 bg-stone-50"
+      style={{ left: `${x}%`, top: `${y}%`, width: `${w}%`, height: `${h}%` }}
+    >
+      <div className="flex h-full">
+        <div
+          className={`flex items-center justify-center ${splash ? "w-1/3 text-7xl" : "w-1/3 text-4xl"}`}
+        >
+          {item.emoji}
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col justify-center py-1 pr-1">
+          <p className={`truncate font-bold leading-tight ${splash ? "text-xl" : "text-xs sm:text-sm"}`}>
+            {item.name}
+          </p>
+          <p className="truncate text-[10px] text-stone-500 sm:text-xs">
+            {item.brand}
+            {item.isBudgetBrand ? " (lågpris)" : ""}
+            {item.memberOffer ? " · medlemspris" : ""}
+          </p>
+          {splash && (
+            <p className="mt-1 text-xs text-stone-500">
+              För 1 mån sen: {formatSEK(hist.oneMonthAgo)} · för 6 mån: {formatSEK(hist.sixMonthsAgo)}
+            </p>
+          )}
+          <p className="text-[10px] text-stone-400 sm:text-xs">
+            ord. {formatSEK(item.ordinaryPrice)}
+            {item.comparePrice ? ` · ${item.comparePrice}` : ""}
+          </p>
+        </div>
+        <div
+          className={`m-1 flex shrink-0 flex-col items-center justify-center self-center rounded-full text-white shadow ${
+            splash ? "h-24 w-24" : "h-12 w-12 sm:h-14 sm:w-14"
+          }`}
+          style={{ background: color, rotate: "8deg" }}
+        >
+          <span className={`font-black leading-none ${splash ? "text-3xl" : "text-sm sm:text-base"}`}>
+            {item.price.toLocaleString("sv-SE", { maximumFractionDigits: 2 })}
+          </span>
+          <span className={splash ? "text-sm" : "text-[8px] sm:text-[10px]"}>kr/{item.unit}</span>
+          {discount >= 15 && (
+            <span className={`font-bold ${splash ? "text-xs" : "text-[7px] sm:text-[9px]"}`}>
+              –{discount}%
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
