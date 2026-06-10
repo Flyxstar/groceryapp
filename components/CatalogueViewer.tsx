@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import GpsButton from "@/components/GpsButton";
+import RealFlyerView, { offerToItem } from "@/components/RealFlyer";
 import { useAppState } from "@/lib/app-state";
 import { currentWeek, getCatalogue, hash01, layoutPages } from "@/lib/data/catalogue";
+import type { RealFlyer } from "@/lib/integrations/tjek";
 import { CHAINS, popularTimes, storeForChain } from "@/lib/data/stores";
 import { haversineKm } from "@/lib/geo";
 import type { LidlFlyer } from "@/lib/integrations/lidl";
@@ -122,8 +124,34 @@ export default function CatalogueViewer({ chain }: { chain: Chain }) {
   );
   const [storeLabel, setStoreLabel] = useState(`${sampleStore.name}, ${sampleStore.address}`);
   const [lidlFlyers, setLidlFlyers] = useState<LidlFlyer[]>([]);
+  const [realFlyers, setRealFlyers] = useState<RealFlyer[]>([]);
+  const [realLoading, setRealLoading] = useState(true);
+  const [activeFlyer, setActiveFlyer] = useState(0);
 
   const qtyById = new Map(cart.map((l) => [l.itemId, l.qty]));
+  const showReal = realFlyers.length > 0;
+  const showGenerated = !realLoading && !showReal;
+
+  // The chain's *original* flyer (real page images + offer hotspots) via the
+  // Tjek platform behind ereklamblad.se, picked for the user's position.
+  useEffect(() => {
+    if (!hydrated) return;
+    let cancelled = false;
+    setRealLoading(true);
+    fetch(`/api/flyers/${chain}?lat=${home.lat}&lng=${home.lng}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (cancelled) return;
+        const flyers = (d.flyers ?? []) as RealFlyer[];
+        setRealFlyers(flyers.filter((f) => f.pages.length > 0));
+        setActiveFlyer(0);
+      })
+      .catch(() => {})
+      .finally(() => !cancelled && setRealLoading(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [chain, hydrated, home.lat, home.lng]);
 
   // Live offers: find the user's nearest store, fetch its weekly offers,
   // typeset them as flyer pages and register the store for trip planning.
@@ -193,7 +221,7 @@ export default function CatalogueViewer({ chain }: { chain: Chain }) {
 
   /** Single entry point for adding items – cart, live registry, fly animation, haptics. */
   const addItems = (items: CatalogueItem[], rects: (DOMRect | null)[]) => {
-    if (status.kind === "live") registerLiveItems(items);
+    registerLiveItems(items);
     items.forEach((item, i) => {
       addToCart(item.id, "catalogue");
       const rect = rects[i];
@@ -234,19 +262,32 @@ export default function CatalogueViewer({ chain }: { chain: Chain }) {
         </div>
       </div>
       <p className="mb-3 rounded-xl bg-amber-50 p-3 text-sm text-amber-900">
-        ✏️ <b>Ringa in som i leksakskatalogen</b> – eller tryck på{" "}
-        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-stone-400 bg-white align-middle text-[11px] font-bold">
-          +
-        </span>{" "}
-        på en vara för att bocka i den. Tryck igen för att ångra.
+        ✏️ <b>Ringa in som i leksakskatalogen</b> – eller stäng av ringläget och{" "}
+        <b>tryck direkt på en vara i bladet</b> för att bocka i den. Tryck igen för att ångra.
       </p>
 
-      {status.kind === "loading" && (
+      {realLoading && (
+        <p className="mb-6 rounded-xl bg-sky-50 p-3 text-sm text-sky-900">
+          ⏳ Hämtar {info.name}s riktiga reklamblad…
+        </p>
+      )}
+      {showReal && (
+        <p className="pop-in mb-6 rounded-xl bg-green-50 p-3 text-sm text-green-900">
+          📄 <b>Originalbladet, direkt i appen:</b> {realFlyers[activeFlyer]?.name}
+          {realFlyers[activeFlyer]?.label ? ` – ${realFlyers[activeFlyer].label}` : ""} ·{" "}
+          {realFlyers[activeFlyer]?.pageCount} sidor · gäller t.o.m.{" "}
+          {new Date(realFlyers[activeFlyer]?.runTill ?? "").toLocaleDateString("sv-SE")}. Ringa
+          in direkt på de riktiga sidorna – appen känner igen {realFlyers[activeFlyer]?.offers.length}{" "}
+          erbjudanden med namn och pris.
+        </p>
+      )}
+
+      {showGenerated && status.kind === "loading" && (
         <p className="mb-6 rounded-xl bg-sky-50 p-3 text-sm text-sky-900">
           ⏳ Hämtar veckans riktiga erbjudanden från din närmaste {info.name}-butik…
         </p>
       )}
-      {status.kind === "live" && (
+      {showGenerated && status.kind === "live" && (
         <p className="pop-in mb-6 rounded-xl bg-green-50 p-3 text-sm text-green-900">
           🟢 <b>Live från {info.name.toLowerCase()}.se:</b> {status.count} riktiga erbjudanden i{" "}
           {status.storeName}
@@ -254,13 +295,13 @@ export default function CatalogueViewer({ chain }: { chain: Chain }) {
           medlemserbjudanden kommer direkt från butikens API.
         </p>
       )}
-      {status.kind === "sample" && chain !== "lidl" && (
+      {showGenerated && status.kind === "sample" && chain !== "lidl" && (
         <p className="mb-6 rounded-xl bg-stone-100 p-3 text-sm text-stone-600">
           ℹ️ Visar exempeldata – {status.reason}.
         </p>
       )}
 
-      {chain === "lidl" && lidlFlyers.length > 0 && (
+      {showGenerated && chain === "lidl" && lidlFlyers.length > 0 && (
         <section className="mb-6 card p-4">
           <h2 className="font-bold">🟢 Riktiga reklamblad från lidl.se</h2>
           <p className="mb-3 text-xs text-stone-500">
@@ -293,14 +334,68 @@ export default function CatalogueViewer({ chain }: { chain: Chain }) {
         </section>
       )}
 
+      {showReal && realFlyers.length > 1 && (
+        <div className="mb-4 flex flex-wrap gap-2">
+          {realFlyers.map((f, i) => (
+            <button
+              key={f.catalogId}
+              onClick={() => setActiveFlyer(i)}
+              className={`pressable rounded-full border px-3 py-1.5 text-sm font-semibold ${
+                i === activeFlyer
+                  ? "border-rose-600 bg-rose-50 text-rose-700"
+                  : "border-stone-300 bg-white hover:bg-stone-50"
+              }`}
+            >
+              📄 {f.name}
+              {f.label ? ` · ${f.label}` : ""} ({f.pageCount} s)
+            </button>
+          ))}
+        </div>
+      )}
+
+      {showReal && realFlyers[activeFlyer] && (
+        <RealFlyerView
+          flyer={realFlyers[activeFlyer]}
+          drawMode={drawMode}
+          circles={circles}
+          qtyById={qtyById}
+          onCircleDrawn={(pageId, pts, hits) => {
+            addCircle(pageId, pts);
+            if (hits.length === 0) {
+              toast("Ingen vara i ringen – ringa runt ett erbjudande");
+              return;
+            }
+            const items = hits.map((h) => ({
+              ...offerToItem(h.offer, chain),
+              image: h.image,
+            }));
+            addItems(
+              items,
+              hits.map((h) => h.rect)
+            );
+          }}
+          onToggleOffer={(offer, image, rect) => {
+            const item = { ...offerToItem(offer, chain), image };
+            if ((qtyById.get(item.id) ?? 0) > 0) {
+              removeFromCart(item.id);
+              vibrate(8);
+              toast(`${item.name} borttagen`);
+            } else {
+              addItems([item], [rect]);
+            }
+          }}
+        />
+      )}
+
       <div className="space-y-8">
-        {status.kind === "loading" && (
+        {(realLoading || (showGenerated && status.kind === "loading")) && (
           <>
             <SkeletonPage />
             <SkeletonPage />
           </>
         )}
-        {pages.map((page) => (
+        {showGenerated &&
+        pages.map((page) => (
           <FlyerPage
             key={page.id}
             page={page}

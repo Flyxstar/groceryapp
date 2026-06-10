@@ -48,26 +48,37 @@ Appen fungerar direkt utan nycklar med inbyggda estimat och exempeldata. Lägg n
 
 ## Live-data från butikerna
 
-Två kedjor har helt öppna JSON-API:er som appen använder direkt, utan nycklar
-(`lib/integrations/axfood.ts`):
+### 📄 Originalbladen – direkt i appen (`lib/integrations/tjek.ts`)
+
+Kedjorna publicerar sina riktiga reklamblad på Tjek-plattformen (ereklamblad.se). Appen
+hämtar **bladets originalsidor som bilder** plus **hotspots** – varje erbjudandes exakta
+polygon-position på sidan med namn, pris och mängd. Det betyder:
+
+- Du bläddrar i **hela det riktiga bladet inne i appen** (ingen extern sida öppnas).
+- Du **ringar in direkt på originalsidorna** – appen träffdetekterar mot hotspots och lägger
+  rätt vara med rätt pris i listan.
+- Varans bild i inköpslistan **beskärs ur själva bladet** (canvas-crop av hotspot-regionen).
+- Bladet väljs utifrån din position (`r_lat`/`r_lng`), så du får din regions blad.
+
+Verifierat i Stockholmsområdet: Lidl (30 sidor, 192 erbjudanden), ICA Kvantum & Maxi,
+Stora Coop & Coop X:-TRA, City Gross och Willys/Willys Hemma. API-nyckeln är ereklambladets
+publika webbnyckel; sätt `TJEK_API_KEY` om du har en egen. Saknas blad för en kedja faller
+appen tillbaka enligt nedan.
+
+### 🟢 Butikernas egna API:er (`lib/integrations/axfood.ts`)
 
 - **Willys & Hemköp** – appen hämtar **alla riktiga butiker** (`/axfood/rest/store`), väljer
   den **närmast din hemposition**, och laddar **veckans riktiga erbjudanden** för just den
   butiken (`/search/campaigns/offline`): riktiga namn, varumärken, kampanjpriser, ordinarie
-  priser, jämförpriser, produktbilder, medlemserbjudanden och giltighetsdatum. Erbjudandena
-  sätts automatiskt som bläddringsbara reklambladssidor som du kan ringa i.
-- **Lidl** – översiktssidan `lidl.se/c/reklamblad/s10018018` är *stabil* (veckobladen bakom
-  den byts varje vecka). Appen läser den live (`lib/integrations/lidl.ts`) och visar de
-  aktuella bladen med omslag, giltighetstid och länk till Lidls bladvisare. Själva
-  bladvisaren (schwarz "leaflets"-plattformen) släpper bara igenom riktiga webbläsar­sessioner,
-  så varunivå-data går inte att hämta serverless – cirklandet sker i exempelbladet.
+  priser, jämförpriser, produktbilder, medlemserbjudanden och giltighetsdatum. Används som
+  reklambladsvy när Tjek-blad saknas (t.ex. Hemköp) och för närmaste-butik i reseplaneringen.
+- **Lidl** – `lib/integrations/lidl.ts` läser den stabila översiktssidan
+  `lidl.se/c/reklamblad/s10018018` som extra fallback.
 
 ### Fortfarande exempeldata
 
-- **ICA, Coop, City Gross**: kräver API-nycklar eller blockerar server-anrop
-  (ICA: `apimgw-pub.ica.se` med abonnemangsnyckel; Coop: `external.api.coop.se` med
-  Ocp-Apim-nyckel; City Gross: API:t svarar inte utanför webbläsaren). Deras blad genereras
-  från en produktkatalog med realistiska prisnivåer per kedja tills nycklar finns.
+- **Kedjor utan blad på Tjek och utan öppet API** får genererade blad från en produktkatalog
+  med realistiska prisnivåer (riktiga produktfoton via `scripts/scrape-product-images.mjs`).
 - **Prishistorik**: härleds ur ordinarie pris (Axfood skickar f.ö. med
   `offlinePromotionLowestHistoricalPrice` – en naturlig nästa utbyggnad är att spara veckans
   priser i en tidsserie så historiken blir helt verklig).
