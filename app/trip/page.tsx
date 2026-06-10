@@ -94,6 +94,7 @@ export default function TripPage() {
         {MODES.map((m) => (
           <button
             key={m.id}
+            aria-pressed={mode === m.id}
             onClick={() => setMode(m.id)}
             className={`pressable rounded-full border px-4 py-2 text-sm font-semibold ${
               mode === m.id

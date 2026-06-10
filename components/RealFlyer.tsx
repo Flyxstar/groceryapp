@@ -207,7 +207,7 @@ function RealFlyerPage({
   return (
     <div
       ref={ref}
-      className="relative mx-auto w-full max-w-2xl select-none overflow-hidden rounded-xl border border-stone-300 bg-white shadow-md"
+      className="paper relative mx-auto w-full max-w-2xl select-none overflow-hidden rounded-xl border border-stone-300 shadow-md"
       style={{ touchAction: drawMode ? "none" : "auto" }}
       onPointerDown={(e) => {
         if (!drawMode) return;

@@ -97,6 +97,7 @@ export default function RecipeDetail({ recipe }: { recipe: Recipe }) {
             {PREFS.map((p) => (
               <button
                 key={p.id}
+                aria-pressed={pref === p.id}
                 onClick={() => setPref(p.id)}
                 title={p.hint}
                 className={`rounded-full border px-3 py-1.5 text-sm font-semibold ${

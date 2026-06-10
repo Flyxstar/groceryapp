@@ -246,6 +246,7 @@ export default function CatalogueViewer({ chain }: { chain: Chain }) {
         </div>
         <div className="flex items-center gap-2">
           <button
+            aria-pressed={drawMode}
             onClick={() => setDrawMode((d) => !d)}
             className={`pressable rounded-full px-4 py-2 text-sm font-bold ${
               drawMode ? "bg-rose-600 text-white shadow-md" : "border border-stone-300 bg-white"
@@ -466,7 +467,7 @@ export default function CatalogueViewer({ chain }: { chain: Chain }) {
 
 function SkeletonPage() {
   return (
-    <div className="flyer-page relative mx-auto w-full max-w-2xl overflow-hidden rounded-xl border border-stone-200 bg-white shadow-md">
+    <div className="paper flyer-page relative mx-auto w-full max-w-2xl overflow-hidden rounded-xl border border-stone-200 shadow-md">
       <div className="shimmer absolute inset-x-0 top-0 h-[9%]" />
       <div className="shimmer absolute left-[6%] top-[12%] h-[34%] w-[88%] rounded-lg" />
       {[0, 1, 2, 3].map((i) => (
@@ -540,7 +541,7 @@ function FlyerPage({
   return (
     <div
       ref={ref}
-      className="flyer-page relative mx-auto w-full max-w-2xl select-none overflow-hidden rounded-xl border border-stone-300 bg-white shadow-md"
+      className="paper flyer-page relative mx-auto w-full max-w-2xl select-none overflow-hidden rounded-xl border border-stone-300 shadow-md"
       style={{ touchAction: drawMode ? "none" : "auto" }}
       onPointerDown={(e) => {
         if (!drawMode) return;
@@ -639,12 +640,13 @@ function OfferCard({
       {/* check / add button – stops propagation so it never starts a circle stroke */}
       <button
         aria-label={inCart ? `Ta bort ${item.name}` : `Lägg till ${item.name}`}
+        aria-pressed={inCart}
         onPointerDown={(e) => e.stopPropagation()}
         onClick={(e) => {
           e.stopPropagation();
           onToggle(cardRef.current?.getBoundingClientRect() ?? null);
         }}
-        className={`pressable absolute left-1 top-1 z-10 flex items-center justify-center rounded-full border font-bold shadow-sm ${
+        className={`pressable hit-target absolute left-1 top-1 z-10 flex items-center justify-center rounded-full border font-bold shadow-sm ${
           splash ? "h-9 w-9 text-base" : "h-6 w-6 text-xs sm:h-7 sm:w-7 sm:text-sm"
         } ${
           inCart

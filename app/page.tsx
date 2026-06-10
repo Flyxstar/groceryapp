@@ -108,6 +108,7 @@ export default function Home() {
               return (
                 <button
                   key={c}
+                  aria-pressed={!hydrated || selectedChains.includes(c)}
                   onClick={() => toggleChain(c)}
                   className={`rounded-full border px-3 py-1.5 text-sm font-semibold transition ${
                     on ? "text-white" : "border-stone-300 text-stone-400 hover:bg-stone-50"
@@ -124,6 +125,7 @@ export default function Home() {
             {MODES.map((m) => (
               <button
                 key={m.id}
+                aria-pressed={hydrated && mode === m.id}
                 onClick={() => setMode(m.id)}
                 className={`rounded-full border px-3 py-1.5 text-sm ${
                   hydrated && mode === m.id

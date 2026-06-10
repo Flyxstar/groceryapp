@@ -132,14 +132,16 @@ export default function CartPage() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => setQty(item.id, line.qty - 1)}
-                        className="pressable h-7 w-7 rounded-full border border-stone-300 font-bold hover:bg-stone-100"
+                        aria-label={`Minska antal ${item.name}`}
+                        className="pressable hit-target h-7 w-7 rounded-full border border-stone-300 font-bold hover:bg-stone-100"
                       >
                         −
                       </button>
                       <span className="w-6 text-center font-bold">{line.qty}</span>
                       <button
                         onClick={() => setQty(item.id, line.qty + 1)}
-                        className="pressable h-7 w-7 rounded-full border border-stone-300 font-bold hover:bg-stone-100"
+                        aria-label={`Öka antal ${item.name}`}
+                        className="pressable hit-target h-7 w-7 rounded-full border border-stone-300 font-bold hover:bg-stone-100"
                       >
                         +
                       </button>
@@ -149,7 +151,7 @@ export default function CartPage() {
                     </div>
                     <button
                       onClick={() => removeFromCart(item.id)}
-                      className="text-stone-400 hover:text-rose-600"
+                      className="hit-target text-stone-400 hover:text-rose-600"
                       aria-label="Ta bort"
                     >
                       ✕
