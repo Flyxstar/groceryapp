@@ -1,0 +1,406 @@
+@import "tailwindcss";
+
+/* ———————————————————————————————————————————————
+   Semantic design tokens (docs/DESIGN-SPEC.md §3.3)
+   No component references a raw color twice: light and
+   dark mode are decided here and only here.
+   ——————————————————————————————————————————————— */
+:root {
+  --system-background: #f6f5f2;
+  --label: #1a1a18;
+  --secondary-label: rgba(60, 60, 55, 0.65);
+  --tertiary-label: rgba(60, 60, 55, 0.4);
+  --card-bg: rgba(255, 255, 255, 0.72);
+  --card-border: rgba(255, 255, 255, 0.65);
+  --nav-bg: rgba(255, 255, 255, 0.6);
+  --nav-border: rgba(28, 28, 26, 0.06);
+  --tint: #e11d48; /* Klipp Rose — the single interactive tint */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* "bouncy" */
+  --ease-out: cubic-bezier(0.4, 0, 0.2, 1); /* "standard" */
+  --shadow-card: 0 1px 2px rgba(28, 28, 26, 0.04), 0 8px 24px -8px rgba(28, 28, 26, 0.12);
+  --shadow-card-hover: 0 2px 4px rgba(28, 28, 26, 0.05), 0 16px 40px -12px rgba(28, 28, 26, 0.18);
+  --wash-1: rgba(225, 29, 72, 0.06);
+  --wash-2: rgba(2, 132, 199, 0.05);
+  --wash-3: rgba(217, 119, 6, 0.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark Luxury (docs/DESIGN-SPEC-DARK-LUXURY.md): pure OLED black root,
+       elevation by ambient glow instead of borders */
+    --system-background: #000000;
+    --label: #f2f2f0;
+    --secondary-label: rgba(235, 235, 245, 0.62);
+    --tertiary-label: rgba(235, 235, 245, 0.4);
+    --card-bg: rgba(22, 22, 26, 0.78);
+    --card-border: rgba(255, 255, 255, 0.06);
+    --nav-bg: rgba(8, 8, 10, 0.55);
+    --nav-border: rgba(255, 255, 255, 0.06);
+    --tint: #fb5277;
+    --shadow-card: 0 8px 24px -8px rgba(0, 0, 0, 0.7), 0 0 48px -12px rgba(251, 82, 119, 0.07);
+    --shadow-card-hover: 0 16px 40px -12px rgba(0, 0, 0, 0.8), 0 0 56px -10px rgba(251, 82, 119, 0.12);
+    --wash-1: rgba(225, 29, 72, 0.07);
+    --wash-2: rgba(34, 211, 238, 0.05);
+    --wash-3: rgba(217, 119, 6, 0.04);
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  color: var(--label);
+  background:
+    radial-gradient(1100px 500px at 85% -10%, var(--wash-1), transparent 60%),
+    radial-gradient(900px 450px at -10% 10%, var(--wash-2), transparent 55%),
+    radial-gradient(800px 500px at 50% 110%, var(--wash-3), transparent 55%),
+    var(--system-background);
+  background-attachment: fixed;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", ui-sans-serif,
+    system-ui, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "cv11" 1, "ss01" 1;
+}
+
+h1, h2, h3 {
+  letter-spacing: -0.02em;
+}
+
+button {
+  cursor: pointer;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--tint) 22%, transparent);
+}
+
+:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--tint) 75%, transparent);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(128, 128, 124, 0.3) transparent;
+}
+
+/* prices and totals align like a receipt */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* HIG §1.3: visually small controls still get a ≥44px hit area */
+.hit-target {
+  position: relative;
+}
+.hit-target::after {
+  content: "";
+  position: absolute;
+  inset: -9px;
+}
+
+/* ———————————————————————————————————————————————
+   Glass surfaces
+   ——————————————————————————————————————————————— */
+.card {
+  border-radius: 1.25rem;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  backdrop-filter: blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.25s var(--ease-out), transform 0.25s var(--ease-out);
+}
+
+.card-hover:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+}
+
+.glass-nav {
+  background: var(--nav-bg);
+  /* dynamic blur: --scroll (0..1) is driven by scroll offset in Nav.tsx */
+  backdrop-filter: blur(calc(12px + 14px * var(--scroll, 0)))
+    saturate(calc(1.3 + 0.6 * var(--scroll, 0)));
+  -webkit-backdrop-filter: blur(calc(12px + 14px * var(--scroll, 0)))
+    saturate(calc(1.3 + 0.6 * var(--scroll, 0)));
+  border-bottom: 1px solid var(--nav-border);
+  box-shadow: 0 8px 24px -16px rgba(0, 0, 0, calc(0.45 * var(--scroll, 0)));
+  transition: box-shadow 0.2s var(--ease-out);
+}
+
+.glass-dark {
+  background: rgba(20, 20, 18, 0.82);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ———————————————————————————————————————————————
+   Catalogue marker & flyer
+   ——————————————————————————————————————————————— */
+.marker-stroke {
+  stroke: #e11d48;
+  stroke-width: 0.8;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.85;
+  filter: url(#marker-rough);
+}
+
+.flyer-page {
+  aspect-ratio: 3 / 4;
+  touch-action: none;
+}
+
+/* HIG spec §7.2: flyer pages are documents ("paper") — they stay light in
+   Dark Mode, like a PDF in Preview. .paper re-pins everything inside. */
+.paper {
+  color: #1c1c1a;
+  background: #ffffff;
+}
+
+/* ———————————————————————————————————————————————
+   Dark mode: remap the stone utility ramp to semantic
+   equivalents — except inside .paper.
+   ——————————————————————————————————————————————— */
+@media (prefers-color-scheme: dark) {
+  .bg-white { background-color: #26262a; }
+  .bg-white\/95 { background-color: rgba(38, 38, 42, 0.95); }
+  .bg-white\/90 { background-color: rgba(38, 38, 42, 0.9); }
+  .bg-white\/75 { background-color: rgba(38, 38, 42, 0.75); }
+  .bg-stone-50 { background-color: #2c2c30; }
+  .bg-stone-100 { background-color: #323236; }
+  .bg-stone-200 { background-color: #3a3a3e; }
+  .hover\:bg-stone-50:hover { background-color: #34343a; }
+  .hover\:bg-stone-100:hover { background-color: #3a3a40; }
+  .bg-stone-900 { border: 1px solid rgba(255, 255, 255, 0.14); }
+
+  .text-stone-800, .text-stone-700 { color: #d6d6da; }
+  .text-stone-600 { color: rgba(235, 235, 245, 0.72); }
+  .text-stone-500 { color: rgba(235, 235, 245, 0.6); }
+  .text-stone-400 { color: rgba(235, 235, 245, 0.45); }
+  .text-stone-300 { color: rgba(235, 235, 245, 0.35); }
+  .text-stone-900 { color: var(--label); }
+
+  .border-stone-100 { border-color: rgba(255, 255, 255, 0.08); }
+  .border-stone-200 { border-color: rgba(255, 255, 255, 0.12); }
+  .border-stone-300 { border-color: rgba(255, 255, 255, 0.18); }
+  .border-white\/70, .border-white\/60 { border-color: rgba(255, 255, 255, 0.12); }
+  .divide-stone-100 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(255, 255, 255, 0.08); }
+
+  /* banners */
+  .bg-amber-50 { background-color: rgba(180, 83, 9, 0.18); }
+  .text-amber-900 { color: #fcd34d; }
+  .bg-sky-50 { background-color: rgba(2, 132, 199, 0.16); }
+  .text-sky-900 { color: #7dd3fc; }
+  .text-sky-700 { color: #7dd3fc; }
+  .border-sky-600 { border-color: rgba(56, 189, 248, 0.5); }
+  .bg-green-50 { background-color: rgba(22, 163, 74, 0.16); }
+  .text-green-900, .text-green-800 { color: #86efac; }
+  .text-green-600 { color: #4ade80; }
+  .bg-rose-50 { background-color: rgba(225, 29, 72, 0.16); }
+  .bg-rose-50\/50 { background-color: rgba(225, 29, 72, 0.1); }
+  .text-rose-700, .text-rose-600 { color: #fb7185; }
+  .border-rose-600 { border-color: rgba(251, 113, 133, 0.6); }
+  .border-rose-300 { border-color: rgba(244, 63, 94, 0.4); }
+  .border-rose-100 { border-color: rgba(244, 63, 94, 0.25); }
+
+  .shimmer {
+    background: linear-gradient(90deg, #141416 25%, #222226 50%, #141416 75%);
+    background-size: 800px 100%;
+  }
+
+  /* paper re-pins: the flyer keeps its printed appearance */
+  .paper, .paper .bg-white { background-color: #ffffff; color: #1c1c1a; }
+  .paper .bg-white\/95 { background-color: rgba(255, 255, 255, 0.95); }
+  .paper .bg-stone-50 { background-color: #fafaf9; }
+  .paper .text-stone-500 { color: #78716c; }
+  .paper .text-stone-400 { color: #a8a29e; }
+  .paper .text-stone-600 { color: #57534e; }
+  .paper .border-stone-200 { border-color: #e7e5e4; }
+  .paper .border-stone-300 { border-color: #d6d3d1; }
+}
+
+/* ———————————————————————————————————————————————
+   Motion (spring catalogue, docs/DESIGN-SPEC.md §4.1)
+   ——————————————————————————————————————————————— */
+@keyframes page-enter {
+  0% { opacity: 0; transform: translateY(10px) scale(0.995); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.page-enter { animation: page-enter 0.35s var(--ease-out); }
+
+@keyframes pop-in {
+  0% { transform: scale(0.6); opacity: 0; }
+  70% { transform: scale(1.08); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.pop-in { animation: pop-in 0.25s var(--ease-spring); }
+
+@keyframes check-pop {
+  0% { transform: scale(0.3) rotate(-12deg); }
+  60% { transform: scale(1.25) rotate(3deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+.check-pop { animation: check-pop 0.3s var(--ease-spring); }
+
+@keyframes badge-bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.45); }
+  100% { transform: scale(1); }
+}
+.badge-bump { animation: badge-bump 0.35s var(--ease-spring); }
+
+@keyframes toast-in {
+  0% { transform: translateY(16px) scale(0.92); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+.toast-in { animation: toast-in 0.3s var(--ease-spring); }
+
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.shimmer {
+  background: linear-gradient(90deg, #ececea 25%, #f8f8f6 50%, #ececea 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+/* cards & buttons feel physical: lift on hover, sink on press */
+.pressable {
+  transition: transform 0.15s var(--ease-out), box-shadow 0.15s ease, background-color 0.15s ease;
+}
+.pressable:active { transform: scale(0.96); }
+
+.offer-card {
+  transition: transform 0.18s var(--ease-out), box-shadow 0.18s ease, border-color 0.18s ease;
+}
+@media (hover: hover) {
+  .offer-card:hover {
+    transform: translateY(-2px) scale(1.015);
+    box-shadow: 0 8px 20px rgba(28, 28, 26, 0.1);
+    z-index: 5;
+  }
+}
+.offer-card.in-cart {
+  border-color: #16a34a;
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.25);
+}
+
+/* ———————————————————————————————————————————————
+   Accessibility adaptations (docs/DESIGN-SPEC.md §6)
+   ——————————————————————————————————————————————— */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .page-enter, .pop-in, .check-pop, .badge-bump, .toast-in, .shimmer { animation: none; }
+  .pressable, .offer-card, .card { transition: none; }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --secondary-label: rgba(40, 40, 36, 0.85);
+    --tertiary-label: rgba(40, 40, 36, 0.7);
+    --card-border: rgba(28, 28, 26, 0.4);
+  }
+  .card { backdrop-filter: none; -webkit-backdrop-filter: none; background: #ffffff; }
+  .text-stone-500, .text-stone-600 { color: #3f3f3b; }
+  .text-stone-400 { color: #52524d; }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .card, .glass-nav { backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .card { background: var(--system-background); }
+  .glass-nav { background: var(--system-background); }
+  .glass-dark { backdrop-filter: none; -webkit-backdrop-filter: none; background: #141412; }
+}
+
+/* ———————————————————————————————————————————————
+   Dark Luxury: quiet UI & composed empty states
+   ——————————————————————————————————————————————— */
+.quiet {
+  opacity: 0.5;
+  transition: opacity 0.3s var(--ease-out);
+}
+.quiet:hover, .quiet:focus-visible, *:hover > .quiet {
+  opacity: 1;
+}
+
+.empty-glyph {
+  font-size: 5rem;
+  line-height: 1;
+  filter: grayscale(1);
+  opacity: 0.3;
+}
+
+/* ———————————————————————————————————————————————
+   iOS controls: switch & segmented control (Idag redesign)
+   ——————————————————————————————————————————————— */
+.ios-switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  background: rgba(120, 120, 128, 0.32);
+  transition: background 0.25s var(--ease-out);
+}
+.ios-switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25), 0 0 0 0.5px rgba(0, 0, 0, 0.04);
+  transition: transform 0.25s var(--ease-spring);
+}
+.ios-switch[data-on="true"] {
+  background: #34c759; /* systemGreen – on/off is semantic, not tint */
+}
+.ios-switch[data-on="true"]::after {
+  transform: translateX(18px);
+}
+
+.segmented {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 12px;
+  background: rgba(120, 120, 128, 0.16);
+}
+.segmented > button {
+  flex: 1;
+  min-height: 40px;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--secondary-label);
+  transition: background 0.2s var(--ease-out), color 0.2s var(--ease-out),
+    transform 0.15s var(--ease-out);
+}
+.segmented > button:active {
+  transform: scale(0.97);
+}
+.segmented > button[aria-pressed="true"] {
+  background: #ffffff;
+  color: var(--label);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12), 0 0 0 0.5px rgba(0, 0, 0, 0.04);
+}
+
+@media (prefers-color-scheme: dark) {
+  .segmented {
+    background: rgba(120, 120, 128, 0.22);
+  }
+  .segmented > button[aria-pressed="true"] {
+    background: #48484c;
+  }
+}
